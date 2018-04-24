@@ -1,4 +1,7 @@
-import array
+try:
+  from cStringIO import StringIO
+except ImportError:
+  from io import StringIO
 
 from .exceptions import PGMEOF, PGMError
 
@@ -6,10 +9,12 @@ class PGMReader(object):
   FILLS = " \t\r\n"
 
   def __init__(self, filename):
-    self.__file = open(filename, "r")
     self.width = 0
     self.height = 0
     self.maximum_gray = 0
+
+    with open(filename, "r") as f:
+      self.__file = StringIO(f.read())
     
   # read the next line
   def get_next_line(self):
@@ -53,7 +58,7 @@ class PGMReader(object):
     self.maximum_gray = maxval
 
   def parse_body(self):
-    columns = [array.array('H') for i in range(self.height)]
+    columns = [[None for i in range(self.height)] for j in range(self.width)]
     col = 0
     row = 0
     while True:
@@ -65,13 +70,16 @@ class PGMReader(object):
         n = int(n, 10)
       except ValueError:
         raise PGMError("invalid pixel at row {row}, column {col}: {pixel}".format(row=row, col=col, pixel=n))
-      columns[col].append(n)
+      if n < 0 or n > self.maximum_gray:
+        raise PGMError("pixel at row {row}, column {col} exceeded range from 0 to {gray}: {pixel}".format(col=col, row=row, pixel=n, gray=self.maximum_gray))
+      columns[col][row] = n
       col += 1
       if col == self.width:
         row += 1
         col = 0
         if row == self.height:
-          return columns
+          break
+    return columns
 
   def read(self):
     self.parse_header()
