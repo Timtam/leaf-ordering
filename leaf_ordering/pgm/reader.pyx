@@ -1,65 +1,56 @@
-# cython: profile=True
 from .exceptions import PGMEOF, PGMError
 
 cimport cython
-from libc.stdio cimport FILE, fopen, fgetc, fclose, feof, rewind
-from libc.stdlib cimport malloc, free
-from libc.string cimport memcpy, strchr
+from libc.stdio cimport FILE, fopen, fclose, fread, fseek, ftell, rewind, SEEK_END
+from libc.stdlib cimport malloc, free, strtol
+from libc.string cimport strchr
 
 cdef class PGMReader:
-  cdef FILE* __file
-  cdef char[5] fills
+  cdef char *data
+  cdef long data_size
+  cdef char *p_ptr
   cdef readonly int width
   cdef readonly height
   cdef readonly int maximum_gray
 
   def __cinit__(PGMReader self, char *filename):
-    self.__file = fopen(filename, "r")
-    if self.__file == NULL:
+    cdef FILE *file = fopen(filename, "r")
+    if file == NULL:
       raise PGMError("File not found")
-    memcpy(self.fills, " \t\r\n\0", 5)
+    fseek(file, 0, SEEK_END)
+    self.data_size = ftell(file)
+    rewind(file)
+    self.data = <char*>malloc(sizeof(char)*self.data_size)
+    if self.data == NULL:
+      raise PGMError("Unable to read file: memory allocation error")
+    fread(self.data, self.data_size, 1, file)
+    fclose(file)
     self.width = 0
     self.height = 0
     self.maximum_gray = 0
     
-  # read the next line
-  @cython.profile(False)
-  cdef object get_next_line(PGMReader self):
-    cdef str line = ''
-    cdef char c = fgetc(self.__file)
-    if c == '#':
-      while fgetc(self.__file) != '\n':
-        pass
-      c = fgetc(self.__file)
-    while True:
-      if feof(self.__file):
-        raise PGMEOF()
-      if strchr(self.fills, c) != NULL:
-        if len(line) == 0:
-          raise PGMError("Filler on wrong position")
-        return line
-      line = line + <bytes>c
-      c = fgetc(self.__file)
+  # returns the next number, skipping comments if available
+  cdef inline long get_next_number(PGMReader self) nogil:
+    cdef char *endptr
+    if self.p_ptr[0] == '#':
+      self.p_ptr = strchr(self.p_ptr, '\n') + 1
+    cdef long res = strtol(self.p_ptr, &endptr, 10)
+    self.p_ptr = endptr + 1
+    return res
 
   cdef object parse_header(PGMReader self):
-    cdef str magic = self.get_next_line()
-    if magic.lower() != "p2":
+    if self.p_ptr[1] != '2':
       raise PGMError("Only portable graymaps in ascii-format are supported")
-    cdef object width = self.get_next_line()
-    try:
-      self.width = int(width, 10)
-    except ValueError:
-      raise PGMError("invalid width: "+width)
-    cdef object height = self.get_next_line()
-    try:
-      self.height = int(height, 10)
-    except ValueError:
-      raise PGMError("invalid height: "+height)
-    cdef object maxval = self.get_next_line()
-    try:
-      maxval = int(maxval, 10)
-    except ValueError:
-      raise PGMError("invalid maximum gray value: "+maxval)
+    self.p_ptr += 3
+    cdef long width = self.get_next_number()
+    if width == 0:
+      raise PGMError("invalid width: 0")
+    self.width = width
+    cdef long height = self.get_next_number()
+    if height == 0:
+      raise PGMError("invalid height: 0")
+    self.height = height
+    maxval = self.get_next_number()
     if maxval <= 0 or maxval > 65536:
       raise PGMError("invalid maximum gray value, must be from 1 to 65536, but is "+maxval)
     self.maximum_gray = maxval
@@ -70,19 +61,13 @@ cdef class PGMReader:
     cdef int *buf = <int*>malloc(sizeof(int) * self.width * self.height)
     cdef int col = 0
     cdef int row = 0
-    cdef bytes n
-    cdef int tmp
+    cdef long tmp
     while True:
-      try:
-        n = self.get_next_line()
-      except PGMEOF:
-        raise PGMError("eof encountered before end of data")
-      try:
-        tmp = int(n, 10)
-      except ValueError:
-        raise PGMError("invalid pixel at row {row}, column {col}: {pixel}".format(row=row, col=col, pixel=n))
+      if self.p_ptr - self.data == self.data_size + 1:
+        raise PGMError("EOF occurred too early")
+      tmp = self.get_next_number()
       if tmp < 0 or tmp > self.maximum_gray:
-        raise PGMError("pixel at row {row}, column {col} exceeded range from 0 to {gray}: {pixel}".format(col=col, row=row, pixel=n, gray=self.maximum_gray))
+        raise PGMError("pixel at row {row}, column {col} exceeded range from 0 to {gray}: {pixel}".format(col=col, row=row, pixel=tmp, gray=self.maximum_gray))
       buf[col * self.height + row] = tmp
       col += 1
       if col == self.width:
@@ -95,12 +80,11 @@ cdef class PGMReader:
     return columns
 
   cpdef int[:, :] read(PGMReader self):
-    rewind(self.__file)
+    self.p_ptr = self.data
     self.parse_header()
     return self.parse_body()
 
 
   def __dealloc__(PGMReader self):
-    if self.__file != NULL:
-      fclose(self.__file)
-      self.__file = NULL
+    if self.data != NULL:
+      free(<void*>self.data)
