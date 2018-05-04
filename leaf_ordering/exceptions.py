@@ -3,3 +3,6 @@ class PGMEOF(Exception):
   
 class PGMError(Exception):
   pass
+  
+class TreeError(Exception):
+  pass

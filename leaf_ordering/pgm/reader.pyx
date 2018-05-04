@@ -1,4 +1,4 @@
-from .exceptions import PGMEOF, PGMError
+from leaf_ordering.exceptions import PGMEOF, PGMError
 
 cimport cython
 from libc.stdio cimport FILE, fopen, fclose, fread, fseek, ftell, rewind, SEEK_END
