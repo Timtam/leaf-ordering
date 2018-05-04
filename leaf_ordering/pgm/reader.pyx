@@ -9,6 +9,7 @@ cdef class PGMReader:
   cdef char *data
   cdef long data_size
   cdef char *p_ptr
+  cdef int body_offset
   cdef readonly int width
   cdef readonly height
   cdef readonly int maximum_gray
@@ -28,6 +29,9 @@ cdef class PGMReader:
     self.width = 0
     self.height = 0
     self.maximum_gray = 0
+    self.p_ptr = self.data
+    self.parse_header()
+    self.body_offset = self.p_ptr - self.data
     
   # returns the next number, skipping comments if available
   cdef inline long get_next_number(PGMReader self) nogil:
@@ -80,8 +84,7 @@ cdef class PGMReader:
     return columns
 
   cpdef int[:, :] read(PGMReader self):
-    self.p_ptr = self.data
-    self.parse_header()
+    self.p_ptr = self.data + self.body_offset
     return self.parse_body()
 
 
