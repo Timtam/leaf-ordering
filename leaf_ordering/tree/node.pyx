@@ -5,10 +5,6 @@ cimport cython
 from libc.math cimport pow, sqrt
 
 cdef class Node:
-  cdef readonly Node left
-  cdef readonly Node right
-  cdef readonly Node previous
-  cdef public int[:] data
 
   def __init__(Node self, int[:] data = None):
     self.left = None
