@@ -1,4 +1,4 @@
-from leaf_ordering.exceptions import TreeError
+from ..exceptions import TreeError
 
 cimport cython
 
@@ -6,11 +6,11 @@ from libc.math cimport pow, sqrt
 
 cdef class Node:
 
-  def __init__(Node self, int[:] data = None):
+  def __init__(Node self, Node root):
     self.left = None
     self.right = None
     self.previous = None
-    self.data = data
+    self.root = root
 
   cpdef bint is_leaf(Node self):
     return self.left is None and self.right is None
@@ -18,15 +18,12 @@ cdef class Node:
   cpdef bint is_root(Node self):
     return self.previous is None
 
-  cpdef double get_distance(Node self):
-    if self.is_leaf():
+  cpdef double get_distance(Node self, Node t):
+    if not self.is_leaf() or not t.is_leaf():
       raise TreeError("cannot get distance from leaf")
-    if self.left.is_leaf() and self.right.is_leaf():
-      if self.left.data.size != self.right.data.size:
-        raise TreeError("data vectors don't have the same length")
-      return self.get_euklid_distance(self.left.data, self.right.data)
-    else:
-      return self.left.get_distance() + self.right.get_distance()
+    if self.data.size != t.data.size:
+      raise TreeError("data vectors don't have the same length")
+    return self.get_euklid_distance(self.data, t.data)
 
   @cython.boundscheck(False)
   @cython.wraparound(False)
@@ -48,3 +45,19 @@ cdef class Node:
 
   cpdef void set_previous(Node self, Node p):
     self.previous = p
+
+  cpdef set_data(Node self, int[:] data):
+    self.data = data
+
+  cpdef unsigned int get_child_count(Node self):
+    cdef unsigned int size = 0
+    if not self.left is None:
+      size += 1 + self.left.get_child_count()
+    if not self.right is None:
+      size += 1 + self.right.get_child_count()
+    return size
+
+  cpdef void rotate(Node self):
+    cdef Node tmp = self.left
+    self.set_left(self.right)
+    self.set_right(tmp)
