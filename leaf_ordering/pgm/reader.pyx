@@ -68,9 +68,11 @@ cdef class PGMReader:
     cdef long tmp
     while True:
       if self.p_ptr - self.data == self.data_size + 1:
+        free(<void*>buf)
         raise PGMError("EOF occurred too early")
       tmp = self.get_next_number()
       if tmp < 0 or tmp > self.maximum_gray:
+        free(<void*>buf)
         raise PGMError("pixel at row {row}, column {col} exceeded range from 0 to {gray}: {pixel}".format(col=col, row=row, pixel=tmp, gray=self.maximum_gray))
       buf[col * self.height + row] = tmp
       col += 1
