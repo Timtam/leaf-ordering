@@ -23,30 +23,32 @@ cdef class PGMWriter(object):
   def __cinit__(PGMWriter self, int maximum_gray = 65536):
     self.maximum_gray = maximum_gray
   
-  cpdef void write(PGMWriter self, char *filename, int[:, :] data):
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  cpdef write(PGMWriter self, char *filename, int[:, :] data):
     cdef int a
     cdef int data_size
     cdef int i, j
     cdef char *buf
-    cdef char *ptr
     cdef FILE *file
     if os.path.exists(filename):
       a = access(filename, W_OK)
       if a == -1:
-        raise PGMError("unable to write to file. errno: %d"%errno)
+        raise PGMError("unable to write to file. errno: {0}".format(errno))
+    self.validate(data)
     if not os.path.exists(os.path.dirname(os.path.abspath(filename))):
       os.makedirs(os.path.dirname(os.path.abspath(filename)))
     data_size = self.get_total_string_length(data)
     buf = <char*>malloc(data_size)
     if buf == NULL:
       raise PGMError("memory allocation error")
-    ptr = buf
-    ptr = ptr + sprintf(ptr, "P2\n%d %d\n%d\n", data.shape[0], data.shape[1], self.maximum_gray)
+    buf += sprintf(buf, "P2\n%d %d\n%d\n", data.shape[0], data.shape[1], self.maximum_gray)
     for j in xrange(data.shape[1]):
       for i in xrange(data.shape[0]):
-        ptr = ptr + sprintf(ptr, "%d ", data[i][j])
-      ptr -= 1
-      ptr = ptr + sprintf(ptr, "\n")
+        buf += sprintf(buf, "%d ", data[i][j])
+      buf -= 1
+      buf += sprintf(buf, "\n")
+    buf -= data_size
     file = fopen(filename, "w")
     if file == NULL:
       free(<void*>buf)
@@ -72,3 +74,10 @@ cdef class PGMWriter(object):
     size += snprintf(NULL, 0, "%d", self.maximum_gray)+1 # maximum gray value + line break
     size += self.get_data_string_length(data)
     return size * sizeof(char)
+
+  cpdef validate(PGMWriter self, int[:, :] data):
+    cdef int i, j
+    for i in xrange(data.shape[0]):
+      for j in xrange(data.shape[1]):
+        if data[i][j] < 0 or data[i][j] > self.maximum_gray:
+          raise PGMError("pixel value at {0}, {1} out of range: {2}".format(i, j, data[i][j]))
