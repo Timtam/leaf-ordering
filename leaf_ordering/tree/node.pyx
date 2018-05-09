@@ -2,8 +2,6 @@ from ..exceptions import TreeError
 
 cimport cython
 
-from libc.math cimport pow, sqrt
-
 cdef class Node:
 
   def __init__(Node self, Node root):
@@ -18,23 +16,6 @@ cdef class Node:
 
   cpdef bint is_root(Node self):
     return self.previous is None
-
-  cpdef double get_distance(Node self, Node t):
-    if not self.is_leaf() or not t.is_leaf():
-      raise TreeError("cannot get distance from leaf")
-    if self.data.size != t.data.size:
-      raise TreeError("data vectors don't have the same length")
-    return self.get_euklid_distance(self.data, t.data)
-
-  @cython.boundscheck(False)
-  @cython.wraparound(False)
-  @cython.nonecheck(False)
-  cdef inline double get_euklid_distance(Node self, int[:] l, int[:] r):
-    cdef double d = 0
-    cdef int i
-    for i in xrange(l.size):
-      d += pow(r[i]-l[i], 2)
-    return sqrt(d)
 
   cpdef void set_left(Node self, Node l):
     self.left = l
