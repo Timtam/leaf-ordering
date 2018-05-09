@@ -18,19 +18,23 @@ if 'USE_CYTHON' in os.environ:
 if USE_CYTHON and not HAVE_CYTHON:
   raise RuntimeError("cython not found")
 
+OPENMP = [
+  "leaf_ordering.tree.graph"
+]
+
 class build_ext_compiler_check(build_ext):
   def build_extensions(self):
     compiler = self.compiler.compiler_type
     for ext in self.extensions:
       comp_args = []
       link_args = []
-      if compiler == 'mingw32' or compiler == 'gcc':
+      if compiler == 'mingw32' or compiler == 'unix' or compiler == 'cygwin':
         comp_args += ['-O3', '-ffast-math']
-        if hasattr(ext, 'require_openmp'):
+        if ext.name in OPENMP:
           comp_args.append('-fopenmp')
           link_args.append('-fopenmp')
       elif compiler == 'msvc':
-        if hasattr(ext, 'require_openmp'):
+        if ext.name in OPENMP:
           comp_args.append('/openmp')
           link_args.append('/openmp')
       ext.extra_compile_args = comp_args
@@ -72,8 +76,7 @@ extensions = [
     [
       "leaf_ordering/tree/graph.pyx"
     ],
-    language="c",
-    require_openmp = True
+    language="c"
   ),
   Extension(
     "leaf_ordering.tree.node",
