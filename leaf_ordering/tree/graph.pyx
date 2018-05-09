@@ -1,7 +1,8 @@
 from ..exceptions import TreeError
 
 cimport cython
-from libc.limits cimport UINT_MAX
+from cython.parallel cimport prange
+from libc.limits cimport INT_MAX
 from libc.math cimport ceil, log2, pow, sqrt
 from libc.stdlib cimport malloc, free
 
@@ -14,17 +15,18 @@ cdef class Graph(Node):
     self.distances = None
   
   cpdef build(Graph self, int[:, :] dataset):
-    cdef unsigned int i
+    cdef int n = dataset.shape[0]
+    cdef int i
     if self.height > 0:
       raise TreeError("tree already exists")
-    if dataset.shape[0] > UINT_MAX:
-      raise TreeError("unable to process more data entries than {0}".format(UINT_MAX))
-    self.height = <int>ceil(log2(dataset.shape[0]))
+    if n > INT_MAX:
+      raise TreeError("unable to process more data entries than {0}".format(INT_MAX))
+    self.height = <int>ceil(log2(n))
     self.build_distances_matrix(dataset)
-    for i in xrange(dataset.shape[0]):
+    for i in xrange(n):
       self.insert_at(i, dataset[i])
 
-  cdef void insert_at(Graph self, unsigned int where, int[:] what):
+  cdef void insert_at(Graph self, int where, int[:] what):
     cdef int i
     cdef int pos
     cdef Node current = self
@@ -54,25 +56,22 @@ cdef class Graph(Node):
     if not self.distances is None:
       free(<void*>&self.distances[0,0])
 
-  cdef void build_distances_matrix(Graph self, int[:, :] dataset):
-    cdef double * m = <double*>malloc(dataset.shape[0] * dataset.shape[0] * sizeof(double))
-    cdef unsigned int i, j
-    if m == NULL:
-      raise TreeError("memory allocation error")
-    self.distances = <double[:dataset.shape[0], :dataset.shape[0]]>m
-    for i in xrange(dataset.shape[0]):
-      for j in xrange(dataset.shape[0]):
-        if i == j:
-          self.distances[i,j] = .0
-        self.distances[i,j] = Graph.get_euklid_distance(dataset[i], dataset[j])
-
   @cython.boundscheck(False)
   @cython.wraparound(False)
   @cython.nonecheck(False)
-  @staticmethod
-  cdef inline double get_euklid_distance(int[:] l, int[:] r):
-    cdef double d = 0
-    cdef int i
-    for i in xrange(l.size):
-      d += pow(r[i]-l[i], 2)
-    return sqrt(d)
+  cdef void build_distances_matrix(Graph self, int[:, :] dataset):
+    cdef int n = dataset.shape[0]
+    cdef double * m = <double*>malloc(n * n * sizeof(double))
+    cdef int i, j, k
+    cdef double d
+    if m == NULL:
+      raise TreeError("memory allocation error")
+    self.distances = <double[:n, :n]>m
+    for i in prange(n, nogil=True):
+      for j in xrange(n):
+        if i == j:
+          self.distances[i,j] = .0
+        d = 0
+        for k in xrange(dataset.shape[1]):
+          d = d + pow(dataset[j,k]-dataset[i,k], 2)
+        self.distances[i,j] = d
