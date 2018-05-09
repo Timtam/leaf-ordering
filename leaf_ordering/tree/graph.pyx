@@ -7,7 +7,7 @@ from .node cimport Node
 
 cdef class Graph(Node):
   def __init__(Graph self):
-    super().__init__(self)
+    Node.__init__(self, self)
     self.height = 0
   
   cpdef build(Graph self, int[:, :] dataset):
@@ -16,18 +16,17 @@ cdef class Graph(Node):
       raise TreeError("tree already exists")
     if dataset.shape[0] > UINT_MAX:
       raise TreeError("unable to process more data entries than {0}".format(UINT_MAX))
-    self.dataset = dataset.copy()
     self.height = <int>ceil(log2(dataset.shape[0]))
     for i in xrange(dataset.shape[0]):
-      self.insert_at(i)
+      self.insert_at(i, dataset[i])
 
-  cdef void insert_at(Graph self, unsigned int ind):
+  cdef void insert_at(Graph self, unsigned int where, int[:] what):
     cdef int i
     cdef int pos
     cdef Node current = self
     cdef Node next
     for i in xrange(self.height - 1, -1, -1):
-      pos = (ind>>i)&0x1
+      pos = (where>>i)&0x1
       if pos == 0:
         if current.left is None:
           next = Node(self)
@@ -38,4 +37,8 @@ cdef class Graph(Node):
           next = Node(self)
           current.set_right(next)
         current = current.right
-    current.set_data(self.dataset[ind])
+    current.set_data(what)
+
+  cpdef clear(Graph self):
+    Node.detach_children(self)
+    self.height = 0

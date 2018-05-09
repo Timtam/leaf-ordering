@@ -10,7 +10,8 @@ cdef class Node:
     self.left = None
     self.right = None
     self.previous = None
-    self.root = root
+    self.level = 0
+    self.set_root(root)
 
   cpdef bint is_leaf(Node self):
     return self.left is None and self.right is None
@@ -44,8 +45,12 @@ cdef class Node:
     r.set_previous(self)
 
   cpdef void set_previous(Node self, Node p):
+    self.level = 0
     self.previous = p
-
+    while p is not None:
+      self.level += 1
+      p = p.previous
+    
   cpdef set_data(Node self, int[:] data):
     self.data = data
 
@@ -61,3 +66,18 @@ cdef class Node:
     cdef Node tmp = self.left
     self.set_left(self.right)
     self.set_right(tmp)
+
+  cdef void detach_children(Node self):
+    if self.left is not None:
+      self.left.clear()
+      self.left.set_previous(None)
+      self.left.set_root(None)
+    if self.right is not None:
+      self.right.clear()
+      self.right.set_previous(None)
+      self.right.set_root(None)
+    self.left = None
+    self.right = None
+
+  cdef void set_root(Node self, Node root):
+    self.root = root
