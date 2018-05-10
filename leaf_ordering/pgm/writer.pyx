@@ -4,6 +4,7 @@ import os.path
 from ..exceptions import PGMError
 
 cimport cython
+from cython.parallel cimport prange
 from libc.stdio cimport FILE, fclose, fopen, fwrite, snprintf, sprintf
 from libc.stdlib cimport free, malloc
 
@@ -61,10 +62,12 @@ cdef class PGMWriter(object):
   @cython.boundscheck(False)
   cdef int get_data_string_length(PGMWriter self, int[:, :] data):
     cdef int size = 0
+    cdef int m = data.shape[0]
+    cdef int n = data.shape[1]
     cdef int i, j
-    for i in xrange(data.shape[0]):
-      for j in xrange(data.shape[1]):
-        size += snprintf(NULL, 0, "%d", data[i][j]) + 1
+    for i in prange(m, nogil=True):
+      for j in xrange(n):
+        size += snprintf(NULL, 0, "%d", data[i,j]) + 1
     return size
 
   cdef int get_total_string_length(PGMWriter self, int[:, :] data):
