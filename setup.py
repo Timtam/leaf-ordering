@@ -19,6 +19,7 @@ if USE_CYTHON and not HAVE_CYTHON:
   raise RuntimeError("cython not found")
 
 OPENMP = [
+  "leaf_ordering.pgm.writer",
   "leaf_ordering.tree.graph"
 ]
 
