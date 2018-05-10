@@ -74,4 +74,4 @@ cdef class Graph(Node):
         d = 0
         for k in xrange(dataset.shape[1]):
           d = d + pow(dataset[j,k]-dataset[i,k], 2)
-        self.distances[i,j] = d
+        self.distances[i,j] = sqrt(d)

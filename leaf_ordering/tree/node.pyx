@@ -50,11 +50,11 @@ cdef class Node:
 
   cdef void detach_children(Node self):
     if self.left is not None:
-      self.left.clear()
+      self.left.detach_children()
       self.left.set_previous(None)
       self.left.set_root(None)
     if self.right is not None:
-      self.right.clear()
+      self.right.detach_children()
       self.right.set_previous(None)
       self.right.set_root(None)
     self.left = None
