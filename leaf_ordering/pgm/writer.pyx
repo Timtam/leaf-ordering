@@ -8,17 +8,6 @@ from cython.parallel cimport prange
 from libc.stdio cimport FILE, fclose, fopen, fwrite, snprintf, sprintf
 from libc.stdlib cimport free, malloc
 
-cdef extern from "<errno.h>":
-  int errno
-  int ENOENT
-
-cdef extern from "<unistd.h>":
-  int F_OK
-  int R_OK
-  int W_OK
-  int X_OK
-  int access(const char *pathname, int mode)
-
 cdef class PGMWriter(object):
   cdef readonly int maximum_gray
   def __cinit__(PGMWriter self, int maximum_gray = 65536):
@@ -27,15 +16,10 @@ cdef class PGMWriter(object):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   cpdef write(PGMWriter self, char *filename, int[:, :] data):
-    cdef int a
     cdef int data_size
     cdef int i, j
     cdef char *buf
     cdef FILE *file
-    if os.path.exists(filename):
-      a = access(filename, W_OK)
-      if a == -1:
-        raise PGMError("unable to write to file. errno: {0}".format(errno))
     self.validate(data)
     if not os.path.exists(os.path.dirname(os.path.abspath(filename))):
       os.makedirs(os.path.dirname(os.path.abspath(filename)))
@@ -43,6 +27,10 @@ cdef class PGMWriter(object):
     buf = <char*>malloc(data_size)
     if buf == NULL:
       raise PGMError("memory allocation error")
+    file = fopen(filename, "w")
+    if file == NULL:
+      free(<void*>buf)
+      raise PGMError("unable to open writable file")
     buf += sprintf(buf, "P2\n%d %d\n%d\n", data.shape[0], data.shape[1], self.maximum_gray)
     for j in xrange(data.shape[1]):
       for i in xrange(data.shape[0]):
@@ -50,10 +38,6 @@ cdef class PGMWriter(object):
       buf -= 1
       buf += sprintf(buf, "\n")
     buf -= data_size
-    file = fopen(filename, "w")
-    if file == NULL:
-      free(<void*>buf)
-      raise PGMError("unable to open writable file")
     fwrite(buf, data_size, 1, file)
     fclose(file)
     free(<void*>buf)

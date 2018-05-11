@@ -35,9 +35,9 @@ class build_ext_compiler_check(build_ext):
           comp_args.append('-fopenmp')
           link_args.append('-fopenmp')
       elif compiler == 'msvc':
+        comp_args.append("/fp:fast")
         if ext.name in OPENMP:
           comp_args.append('/openmp')
-          link_args.append('/openmp')
       ext.extra_compile_args = comp_args
       ext.extra_link_args = link_args
     build_ext.build_extensions(self)
