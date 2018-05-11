@@ -8,11 +8,16 @@ from libc.stdlib cimport malloc, free
 
 from .node cimport Node
 
+cdef extern from * nogil:
+  """
+  #define IDX(i,j) (i*(i+1)/2+j)
+  """
+  int IDX(int i, int j)
+
 cdef class Graph(Node):
   def __init__(Graph self):
     Node.__init__(self, self)
     self.height = 0
-    self.distances = None
   
   cpdef build(Graph self, int[:, :] dataset):
     cdef int n = dataset.shape[0]
@@ -48,30 +53,29 @@ cdef class Graph(Node):
   cpdef clear(Graph self):
     Node.detach_children(self)
     self.height = 0
-    if not self.distances is None:
-      free(<void*>&self.distances[0,0])
-      self.distances = None
+    if self.distances != NULL:
+      free(<void*>self.distances)
+      self.distances = NULL
 
   def __dealloc__(Graph self):
-    if not self.distances is None:
-      free(<void*>&self.distances[0,0])
+    if self.distances != NULL:
+      free(<void*>self.distances)
 
   @cython.boundscheck(False)
   @cython.wraparound(False)
   @cython.nonecheck(False)
   cdef void build_distances_matrix(Graph self, int[:, :] dataset):
     cdef int n = dataset.shape[0]
-    cdef double * m = <double*>malloc(n * n * sizeof(double))
+    self.distances = <double*>malloc((n+1)*n/2*sizeof(double))
     cdef int i, j, k
     cdef double d
-    if m == NULL:
+    if self.distances == NULL:
       raise TreeError("memory allocation error")
-    self.distances = <double[:n, :n]>m
     for i in prange(n, nogil=True):
-      for j in xrange(n):
+      for j in xrange(i+1):
         if i == j:
-          self.distances[i,j] = .0
+          self.distances[IDX(i,j)] = .0
         d = 0
         for k in xrange(dataset.shape[1]):
           d = d + pow(dataset[j,k]-dataset[i,k], 2)
-        self.distances[i,j] = sqrt(d)
+        self.distances[IDX(i,j)] = sqrt(d)

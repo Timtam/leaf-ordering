@@ -11,9 +11,13 @@ except ImportError:
   HAVE_CYTHON = False
 
 USE_CYTHON = HAVE_CYTHON
+DEBUG_MODE = False
 
 if 'USE_CYTHON' in os.environ:
   USE_CYTHON = os.environ['USE_CYTHON'].lower() in ('1', 'yes')
+
+if 'DEBUG' in os.environ:
+  DEBUG_MODE = os.environ['DEBUG'].lower() in ('1', 'yes')
 
 if USE_CYTHON and not HAVE_CYTHON:
   raise RuntimeError("cython not found")
@@ -34,10 +38,15 @@ class build_ext_compiler_check(build_ext):
         if ext.name in OPENMP:
           comp_args.append('-fopenmp')
           link_args.append('-fopenmp')
+        if DEBUG_MODE:
+          comp_args.append('-g')
       elif compiler == 'msvc':
         comp_args.append("/fp:fast")
         if ext.name in OPENMP:
           comp_args.append('/openmp')
+        if DEBUG_MODE:
+          comp_args += ['/Od', '-Zi']
+          link_args.append('-debug')
       ext.extra_compile_args = comp_args
       ext.extra_link_args = link_args
     build_ext.build_extensions(self)
@@ -90,7 +99,8 @@ extensions = [
 
 if USE_CYTHON:
   extensions = cythonize(
-    extensions
+    extensions,
+    gdb_debug = DEBUG_MODE
   )
 else:
   extensions = no_cythonize(extensions)

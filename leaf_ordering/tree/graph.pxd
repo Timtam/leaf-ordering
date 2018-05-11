@@ -2,7 +2,7 @@ from .node cimport Node
 
 cdef class Graph(Node):
   cdef readonly int height
-  cdef readonly double[:, :] distances
+  cdef double *distances
   
   cpdef build(Graph self, int[:, :] dataset)
   cdef void insert_at(Graph self, int where, int[:] what)
