@@ -48,7 +48,7 @@ cdef class Graph(Node):
           next = Node(self)
           current.set_right(next)
         current = current.right
-    current.set_data(what)
+    current.set_data(what, where)
 
   cpdef clear(Graph self):
     Node.detach_children(self)

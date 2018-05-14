@@ -32,8 +32,9 @@ cdef class Node:
       self.level += 1
       p = p.previous
     
-  cdef void set_data(Node self, int[:] data):
+  cdef void set_data(Node self, int[:] data, int data_offset):
     self.data = data
+    self.data_offset = data_offset
 
   cpdef unsigned int get_child_count(Node self):
     cdef unsigned int size = 0
