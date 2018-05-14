@@ -9,6 +9,7 @@ cdef class Node:
     self.right = None
     self.previous = None
     self.level = 0
+    self.data = None
     self.set_root(root)
 
   cpdef bint is_leaf(Node self):
@@ -75,3 +76,17 @@ cdef class Node:
     if not self.right is None:
       nodes += self.right.get_children_at_level(level)
     return nodes
+
+  cdef Node get_bottom_left_node(Node self):
+    if self.is_leaf():
+      return self
+    if not self.left is None:
+      return self.left.get_bottom_left_node()
+    return self.right.get_bottom_left_node()
+
+  cdef Node get_bottom_right_node(Node self):
+    if self.is_leaf():
+      return self
+    if not self.right is None:
+      return self.right.get_bottom_left_node()
+    return self.left.get_bottom_right_node()

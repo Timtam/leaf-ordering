@@ -10,9 +10,20 @@ from .node cimport Node
 
 cdef extern from * nogil:
   """
-  #define IDX(i,j) (i*(i+1)/2+j)
+  #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
+  double* min_element(double *start, double *end)
+  {
+    if (start == end) return end;
+
+    double *min = start++;
+    for (; start != end; ++start)
+      if (*start < *min) min = start;
+
+    return min;
+  }
   """
   int IDX(int i, int j)
+  double *min_element(double *start, double*end)
 
 cdef class Graph(Node):
   def __init__(Graph self):
@@ -79,3 +90,49 @@ cdef class Graph(Node):
         for k in xrange(dataset.shape[1]):
           d = d + pow(dataset[j,k]-dataset[i,k], 2)
         self.distances[IDX(i,j)] = sqrt(d)
+
+  cpdef sort_a(Graph self):
+    cdef double[4] dist;
+    cdef double* min_dist
+    cdef double dist_diff
+    cdef int i
+    cdef list nodes
+    cdef Node leaf_a, leaf_b
+    cdef Node node_a, node_b
+    # we got four different distances:
+    # a: both leaves are initial
+    # b: leave 1 and 2 are rotated
+    # c: leaves 1 and 2 and 3 and 4 are rotated
+    # d: leaves 1 and 2 are initial, 3 and 4 are rotated
+    for i in xrange(self.height - 1, -1, -1):
+      nodes = self.get_children_at_level(i)
+      for j in xrange(len(nodes) - 1):
+        node_a = nodes[j]
+        node_b = nodes[j+1]
+        #   calculating all distances
+        # a
+        leaf_a = node_a.get_bottom_right_node()
+        leaf_b = node_b.get_bottom_left_node()
+        dist[0] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        # b
+        leaf_a = node_a.get_bottom_left_node()
+        dist[1] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        if i > 0:
+          dist[1] += dist_diff
+        # c
+        leaf_b = node_b.get_bottom_right_node()
+        dist[2] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        if i > 0:
+          dist[2] += dist_diff
+        # d
+        leaf_a = node_a.get_bottom_right_node()
+        dist[3] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        # comparing and rotating
+        min_dist = min_element(dist, dist + 4)
+        if min_dist - dist == 1 or min_dist - dist == 2:
+          node_a.rotate()
+        if min_dist - dist == 2 or min_dist - dist == 4:
+          node_b.rotate()
+        # calculating distance difference
+        leaf_b = node_b.get_bottom_right_node()
+        dist_diff = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)] - dist[0]
