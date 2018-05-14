@@ -17,22 +17,22 @@ cdef class Node:
   cpdef bint is_root(Node self):
     return self.previous is None
 
-  cpdef void set_left(Node self, Node l):
+  cdef void set_left(Node self, Node l):
     self.left = l
     l.set_previous(self)
 
-  cpdef void set_right(Node self, Node r):
+  cdef void set_right(Node self, Node r):
     self.right = r
     r.set_previous(self)
 
-  cpdef void set_previous(Node self, Node p):
+  cdef void set_previous(Node self, Node p):
     self.level = 0
     self.previous = p
     while p is not None:
       self.level += 1
       p = p.previous
     
-  cpdef set_data(Node self, int[:] data):
+  cdef void set_data(Node self, int[:] data):
     self.data = data
 
   cpdef unsigned int get_child_count(Node self):
@@ -43,7 +43,7 @@ cdef class Node:
       size += 1 + self.right.get_child_count()
     return size
 
-  cpdef void rotate(Node self):
+  cdef void rotate(Node self):
     cdef Node tmp = self.left
     self.set_left(self.right)
     self.set_right(tmp)
@@ -62,3 +62,15 @@ cdef class Node:
 
   cdef void set_root(Node self, Node root):
     self.root = root
+
+  cpdef list get_children_at_level(Node self, int level):
+    cdef list nodes = []
+    if self.level == level:
+      return [self]
+    if self.level > level or self.is_leaf():
+      return []
+    if not self.left is None:
+      nodes += self.left.get_children_at_level(level)
+    if not self.right is None:
+      nodes += self.right.get_children_at_level(level)
+    return nodes
