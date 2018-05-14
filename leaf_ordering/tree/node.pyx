@@ -20,11 +20,13 @@ cdef class Node:
 
   cdef void set_left(Node self, Node l):
     self.left = l
-    l.set_previous(self)
+    if not l is None:
+      l.set_previous(self)
 
   cdef void set_right(Node self, Node r):
     self.right = r
-    r.set_previous(self)
+    if not r is None:
+      r.set_previous(self)
 
   cdef void set_previous(Node self, Node p):
     self.level = 0

@@ -117,12 +117,12 @@ cdef class Graph(Node):
         # b
         leaf_a = node_a.get_bottom_left_node()
         dist[1] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
-        if i > 0:
+        if j > 0:
           dist[1] += dist_diff
         # c
         leaf_b = node_b.get_bottom_right_node()
         dist[2] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
-        if i > 0:
+        if j > 0:
           dist[2] += dist_diff
         # d
         leaf_a = node_a.get_bottom_right_node()
