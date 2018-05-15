@@ -1,0 +1,2 @@
+Die Heuristik kann noch nicht genauer eingeschätzt werden, da das hierarchische Clustering leider noch nicht implementiert ist.
+Allerdings kann man sagen, dass die Ausführung des Programms für 1280 Testobjekte noch in relativ kurzer Zeit (einige Sekunden) erfolgt.
