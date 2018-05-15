@@ -81,7 +81,7 @@ cdef class Graph(Node):
     cdef int i, j, k
     cdef double d
     if self.distances == NULL:
-      raise TreeError("memory allocation error")
+      raise MemoryError()
     for i in prange(n, nogil=True):
       for j in xrange(i+1):
         if i == j:
@@ -150,7 +150,7 @@ cdef class Graph(Node):
     cdef int *data = <int*>malloc(m*n*sizeof(int))
     cdef int[:] blk
     if data == NULL:
-      raise TreeError("memory allocation error")
+      raise MemoryError()
     for i in xrange(m):
       node = nodes[i]
       offset = i*n

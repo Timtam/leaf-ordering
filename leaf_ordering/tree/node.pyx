@@ -1,5 +1,3 @@
-from ..exceptions import TreeError
-
 cimport cython
 
 cdef class Node:
