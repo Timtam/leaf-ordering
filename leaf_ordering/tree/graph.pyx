@@ -8,17 +8,18 @@ from libc.stdlib cimport malloc, free
 
 from .node cimport Node
 
+# some manual c-function bindings
 cdef extern from * nogil:
   """
   // Fix for older C89 compiler for functions fmin, fmax, log2
   #ifndef fmin
-  #define fmin(x,y) (x<y?x:y)
+    #define fmin(x,y) (x<y?x:y)
   #endif
   #ifndef fmax
-  #define fmax(x,y) (x>y?x:y)
+    #define fmax(x,y) (x>y?x:y)
   #endif
   #ifndef log2
-  #define log2(x) (log(x)/log(2))
+    #define log2(x) (log(x)/log(2))
   #endif
   
   #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
@@ -36,11 +37,17 @@ cdef extern from * nogil:
   int IDX(int i, int j)
   double *min_element(double *start, double*end)
 
+# graph class
+# is basically just a derived node, but with additional methods
+
 cdef class Graph(Node):
+  # constructor
   def __init__(Graph self):
     Node.__init__(self, self)
     self.height = 0
   
+  # builds the binary tree
+  # receives the leaf data as parameter
   cpdef build(Graph self, int[:, :] dataset):
     cdef int n = dataset.shape[0]
     cdef int i
@@ -49,10 +56,17 @@ cdef class Graph(Node):
     if n > INT_MAX:
       raise TreeError("unable to process more data entries than {0}".format(INT_MAX))
     self.height = <int>ceil(log2(n))
+    # building the distances matrix (see below)
     self.build_distances_matrix(dataset)
+    # inserting all leaves
     for i in xrange(n):
       self.insert_at(i, dataset[i])
 
+  # inserts the given leaf at the given index
+  # index points towards the leaf at the given position
+  #   (binary representation)
+  # all nodes which don't yet exist, but need to be filled in
+  # will be created automatically
   cdef void insert_at(Graph self, int where, int[:] what):
     cdef int i
     cdef int pos
@@ -72,6 +86,7 @@ cdef class Graph(Node):
         current = current.right
     current.set_data(what, where)
 
+  # cleans the graph from all children
   cpdef clear(Graph self):
     Node.detach_children(self)
     self.height = 0
@@ -79,10 +94,16 @@ cdef class Graph(Node):
       free(<void*>self.distances)
       self.distances = NULL
 
+  # destructor
+  # frees unneeded memory
   def __dealloc__(Graph self):
     if self.distances != NULL:
       free(<void*>self.distances)
 
+  
+  # builds the distance matrix
+  # the distance matrix is a triangular matrix, which contains
+  # all possible distances between the leaves
   @cython.boundscheck(False)
   @cython.wraparound(False)
   @cython.nonecheck(False)
@@ -93,6 +114,7 @@ cdef class Graph(Node):
     cdef double d
     if self.distances == NULL:
       raise MemoryError()
+    # prange enables multithreading to improve performance drastically
     for i in prange(n, nogil=True):
       for j in xrange(i+1):
         if i == j:
@@ -102,6 +124,15 @@ cdef class Graph(Node):
           d = d + pow(dataset[j,k]-dataset[i,k], 2)
         self.distances[IDX(i,j)] = sqrt(d)
 
+  # first heuristics implementation
+  # we start ordering at level (graph.height - 1)
+  # we take all nodes and compare them
+  # we then check all 4 possible distances (see below)
+  # and rotate the nodes to get the best possible distance
+  # we therefore remember the previous distance and check, if turning the first
+  # node around will probably increase the previous distance even more than we reduce it
+  # when one level finished, we decrease the level and start again
+  # ends at level 0 (root)
   cpdef sort_a(Graph self):
     cdef double[4] dist;
     cdef double* min_dist
@@ -145,9 +176,11 @@ cdef class Graph(Node):
         if min_dist - dist == 2 or min_dist - dist == 3:
           node_b.rotate()
         # calculating distance difference
+        leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_right_node()
         dist_diff = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)] - dist[0]
 
+  # copies all datasets within the leaves together and returns them
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.wraparound(False)
