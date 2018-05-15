@@ -10,12 +10,23 @@ from .node cimport Node
 
 cdef extern from * nogil:
   """
+  // Fix for older C89 compiler for functions fmin, fmax, log2
+  #ifndef fmin
+  #define fmin(x,y) (x<y?x:y)
+  #endif
+  #ifndef fmax
+  #define fmax(x,y) (x>y?x:y)
+  #endif
+  #ifndef log2
+  #define log2(x) (log(x)/log(2))
+  #endif
+  
   #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
   double* min_element(double *start, double *end)
   {
-    if (start == end) return end;
-
     double *min = start++;
+    if (start == end) return end;
+    
     for (; start != end; ++start)
       if (*start < *min) min = start;
 
