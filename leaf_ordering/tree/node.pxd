@@ -1,3 +1,6 @@
+# the node header file
+# node.pyx is much more interesting
+
 cdef class Node:
   cdef readonly Node left
   cdef readonly Node right

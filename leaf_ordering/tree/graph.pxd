@@ -1,3 +1,5 @@
+# header-file for main graph
+# graph.pyx is more important and contains the actual implementation
 from .node cimport Node
 
 cdef class Graph(Node):
