@@ -95,7 +95,7 @@ cdef class Graph(Node):
     cdef double[4] dist;
     cdef double* min_dist
     cdef double dist_diff
-    cdef int i
+    cdef int i, j
     cdef list nodes
     cdef Node leaf_a, leaf_b
     cdef Node node_a, node_b
@@ -136,3 +136,26 @@ cdef class Graph(Node):
         # calculating distance difference
         leaf_b = node_b.get_bottom_right_node()
         dist_diff = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)] - dist[0]
+
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.wraparound(False)
+  cpdef get_data(Graph self):
+    cdef int i
+    cdef int offset
+    cdef list nodes = self.get_children_at_level(self.height)
+    cdef int m = len(nodes)
+    cdef int n = (<Node>nodes[0]).data.shape[0]
+    cdef Node node
+    cdef int *data = <int*>malloc(m*n*sizeof(int))
+    cdef int[:] blk
+    if data == NULL:
+      raise TreeError("memory allocation error")
+    for i in xrange(m):
+      node = nodes[i]
+      offset = i*n
+      blk = <int[:n]>(data+offset)
+      blk[...] = node.data
+    cdef int[:, ::1] mem = (<int[:m, :n]>data).copy()
+    free(<void*>data)
+    return mem

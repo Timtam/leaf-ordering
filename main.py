@@ -31,3 +31,10 @@ graph.build(dataset)
 
 # sorting
 graph.sort_a()
+
+# retrieving the ordered data from the graph
+data = graph.get_data()
+
+# initializing the writer and writing test data to disk
+writer = PGMWriter(reader.maximum_gray)
+writer.write("test_a.pgm", data)
