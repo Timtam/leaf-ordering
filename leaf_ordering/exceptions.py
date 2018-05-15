@@ -6,3 +6,6 @@ class PGMError(Exception):
   
 class TreeError(Exception):
   pass
+
+class ValidatorError(Exception):
+  pass

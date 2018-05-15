@@ -95,6 +95,13 @@ extensions = [
     ],
     language = "c"
   ),
+  Extension(
+    "leaf_ordering.tree.validator",
+    [
+      "leaf_ordering/tree/validator.pyx"
+    ],
+    language = "c"
+  ),
 ]
 
 if USE_CYTHON:

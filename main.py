@@ -7,6 +7,7 @@ try:
   from leaf_ordering.tree.graph import Graph
   from leaf_ordering.pgm.reader import PGMReader
   from leaf_ordering.pgm.writer import PGMWriter
+  from leaf_ordering.tree.validator import Validator
 except ImportError:
   print("""
   Imports failed!
@@ -31,6 +32,10 @@ graph.build(dataset)
 
 # sorting
 graph.sort_a()
+
+# validation of the graph
+validator = Validator()
+validator.check_cycle(graph)
 
 # retrieving the ordered data from the graph
 data = graph.get_data()
