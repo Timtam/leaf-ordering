@@ -44,7 +44,7 @@ cdef class PGMWriter(object):
         buf += sprintf(buf, "%d ", data[i,j])
       buf -= 1
       buf += sprintf(buf, "\n")
-    buf -= data_size
+    buf -= data_size - 1
     fwrite(buf, data_size, 1, file)
     fclose(file)
     free(<void*>buf)
@@ -60,7 +60,7 @@ cdef class PGMWriter(object):
     for i in prange(m, nogil=True):
       for j in xrange(n):
         size += snprintf(NULL, 0, "%d", data[i,j]) + 1
-    return size
+    return size + 1
 
   # gets the total string length required to store the pgm file as a whole
   cdef int get_total_string_length(PGMWriter self, int[:, :] data):

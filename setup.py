@@ -34,12 +34,12 @@ class build_ext_compiler_check(build_ext):
       comp_args = []
       link_args = []
       if compiler == 'mingw32' or compiler == 'unix' or compiler == 'cygwin':
-        comp_args += ['-O3', '-ffast-math']
+        comp_args += ['-ffast-math']
         if ext.name in OPENMP:
           comp_args.append('-fopenmp')
           link_args.append('-fopenmp')
         if DEBUG_MODE:
-          comp_args.append('-g')
+          comp_args += ['-g', '-O0']
       elif compiler == 'msvc':
         comp_args.append("/fp:fast")
         if ext.name in OPENMP:
