@@ -142,7 +142,7 @@ cdef class Graph(Node):
         min_dist = min_element(dist, dist + 4)
         if min_dist - dist == 1 or min_dist - dist == 2:
           node_a.rotate()
-        if min_dist - dist == 2 or min_dist - dist == 4:
+        if min_dist - dist == 2 or min_dist - dist == 3:
           node_b.rotate()
         # calculating distance difference
         leaf_b = node_b.get_bottom_right_node()
