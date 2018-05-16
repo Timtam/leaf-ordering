@@ -100,7 +100,6 @@ cdef class Graph(Node):
     if self.distances != NULL:
       free(<void*>self.distances)
 
-  
   # builds the distance matrix
   # the distance matrix is a triangular matrix, which contains
   # all possible distances between the leaves

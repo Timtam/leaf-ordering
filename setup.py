@@ -102,6 +102,13 @@ extensions = [
     ],
     language = "c"
   ),
+  Extension(
+    "leaf_ordering.shuffle",
+    [
+      "leaf_ordering/shuffle.pyx"
+    ],
+    language = "c"
+  ),
 ]
 
 if USE_CYTHON:

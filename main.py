@@ -1,6 +1,5 @@
 # imports
 import os.path
-import random
 import sys
 
 try:
@@ -8,6 +7,7 @@ try:
   from leaf_ordering.pgm.reader import PGMReader
   from leaf_ordering.pgm.writer import PGMWriter
   from leaf_ordering.tree.validator import Validator
+  from leaf_ordering.shuffle import random_shuffle_dataset
 except ImportError:
   print("""
   Imports failed!
@@ -19,13 +19,13 @@ except ImportError:
 graph = Graph()
 
 # loading the first test dataset
-reader = PGMReader(os.path.join(os.path.dirname(__file__), 'datasets', 'test_3_1280.pgm').encode('utf-8'))
+reader = PGMReader(os.path.join(os.path.dirname(__file__), 'datasets', 'test_4_4.pgm').encode('utf-8'))
 
 # reading and processing the data
 dataset = reader.read()
 
 # we shuffle the dataset randomly
-random.shuffle(dataset)
+dataset = random_shuffle_dataset(dataset)
 
 # build the graph from the dataset
 graph.build(dataset)

@@ -107,3 +107,6 @@ cdef class Node:
     if not self.right is None:
       return self.right.get_bottom_left_node()
     return self.left.get_bottom_right_node()
+
+  def __repr__(Node self):
+    return "Node at level {0} with data {1}".format(self.level, ', '.join([str(d) for d in self.data]))
