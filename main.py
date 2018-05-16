@@ -1,4 +1,5 @@
 # imports
+import argparse
 import os.path
 import sys
 
@@ -15,11 +16,21 @@ except ImportError:
   """)
   sys.exit()
 
+# creating argument parser and adding some arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--dataset', help='path to the pgm file to use', type=str, default=os.path.join(os.path.dirname(__file__), 'datasets', 'test_3_1280.pgm'))
+
+args = parser.parse_args()
+path = args.dataset
+if not os.path.exists(path):
+  print('This file doesn\'t exist')
+  sys.exit()
+
 # creating the graph
 graph = Graph()
 
 # loading the first test dataset
-reader = PGMReader(os.path.join(os.path.dirname(__file__), 'datasets', 'test_4_4.pgm').encode('utf-8'))
+reader = PGMReader(path)
 
 # reading and processing the data
 dataset = reader.read()
