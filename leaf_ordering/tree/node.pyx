@@ -11,7 +11,7 @@ cdef class Node:
     self.right = None
     self.previous = None
     self.level = 0
-    self.data = None
+    self.data = NULL
     self.set_root(root)
 
   # checks if this node is a leaf
@@ -42,7 +42,7 @@ cdef class Node:
       p = p.previous
     
   # sets the dataset for this node
-  cdef void set_data(Node self, int[:] data, int data_offset):
+  cdef void set_data(Node self, int *data, int data_offset):
     self.data = data
     self.data_offset = data_offset
 
@@ -107,6 +107,3 @@ cdef class Node:
     if not self.right is None:
       return self.right.get_bottom_left_node()
     return self.left.get_bottom_right_node()
-
-  def __repr__(Node self):
-    return "Node at level {0} with data {1}".format(self.level, ', '.join([str(d) for d in self.data]))

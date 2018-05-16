@@ -5,7 +5,7 @@ cdef class Node:
   cdef readonly Node left
   cdef readonly Node right
   cdef readonly Node previous
-  cdef readonly int[:] data
+  cdef int *data
   cdef readonly Node root
   cdef readonly int level
   cdef int data_offset
@@ -15,7 +15,7 @@ cdef class Node:
   cdef void set_left(Node self, Node l)
   cdef void set_right(Node self, Node r)
   cdef void set_previous(Node self, Node p)
-  cdef void set_data(Node self, int[:] data, int data_offset)
+  cdef void set_data(Node self, int *data, int data_offset)
   cpdef unsigned int get_child_count(Node self)
   cdef void rotate(Node self)
   cdef void detach_children(Node self)

@@ -45,6 +45,8 @@ cdef class Graph(Node):
   def __init__(Graph self):
     Node.__init__(self, self)
     self.height = 0
+    self.data_width = 0
+    self.data_height = 0
   
   # builds the binary tree
   # receives the leaf data as parameter
@@ -56,18 +58,20 @@ cdef class Graph(Node):
     if n > INT_MAX:
       raise TreeError("unable to process more data entries than {0}".format(INT_MAX))
     self.height = <int>ceil(log2(n))
+    self.data_height = n
+    self.data_width = dataset.shape[1]
     # building the distances matrix (see below)
     self.build_distances_matrix(dataset)
     # inserting all leaves
     for i in xrange(n):
-      self.insert_at(i, dataset[i])
+      self.insert_at(i, &dataset[i,0])
 
   # inserts the given leaf at the given index
   # index points towards the leaf at the given position
   #   (binary representation)
   # all nodes which don't yet exist, but need to be filled in
   # will be created automatically
-  cdef void insert_at(Graph self, int where, int[:] what):
+  cdef void insert_at(Graph self, int where, int *what):
     cdef int i
     cdef int pos
     cdef Node current = self
@@ -90,6 +94,8 @@ cdef class Graph(Node):
   cpdef clear(Graph self):
     Node.detach_children(self)
     self.height = 0
+    self.data_height = 0
+    self.data_width = 0
     if self.distances != NULL:
       free(<void*>self.distances)
       self.distances = NULL
@@ -107,7 +113,7 @@ cdef class Graph(Node):
   @cython.wraparound(False)
   @cython.nonecheck(False)
   cdef void build_distances_matrix(Graph self, int[:, :] dataset):
-    cdef int n = dataset.shape[0]
+    cdef int n = self.data_height
     self.distances = <double*>malloc((n+1)*n/2*sizeof(double))
     cdef int i, j, k
     cdef double d
@@ -177,7 +183,7 @@ cdef class Graph(Node):
         # calculating distance difference
         leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_right_node()
-        dist_diff = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)] - dist[0]
+        dist_diff = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)] - min_dist[0]
 
   # copies all datasets within the leaves together and returns them
   @cython.boundscheck(False)
@@ -187,18 +193,20 @@ cdef class Graph(Node):
     cdef int i
     cdef int offset
     cdef list nodes = self.get_children_at_level(self.height)
-    cdef int m = len(nodes)
-    cdef int n = (<Node>nodes[0]).data.shape[0]
+    cdef int m = self.data_height
+    cdef int n = self.data_width
     cdef Node node
     cdef int *data = <int*>malloc(m*n*sizeof(int))
     cdef int[:] blk
+    cdef int[:] datablk
     if data == NULL:
       raise MemoryError()
     for i in xrange(m):
       node = nodes[i]
       offset = i*n
       blk = <int[:n]>(data+offset)
-      blk[...] = node.data
+      datablk = <int[:n]>(node.data)
+      blk[...] = datablk
     cdef int[:, ::1] mem = (<int[:m, :n]>data).copy()
     free(<void*>data)
     return mem
@@ -208,7 +216,7 @@ cdef class Graph(Node):
     cdef list nodes = self.get_children_at_level(self.height)
     cdef double dist = 0
     cdef int i
-    cdef int n = len(nodes)
+    cdef int n = self.data_height
     cdef Node node_a, node_b
     for i in xrange(1, n - 2, 2):
       node_a = nodes[i]

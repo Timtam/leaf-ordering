@@ -3,18 +3,18 @@ import argparse
 import os.path
 import sys
 
-try:
-  from leaf_ordering.tree.graph import Graph
-  from leaf_ordering.pgm.reader import PGMReader
-  from leaf_ordering.pgm.writer import PGMWriter
-  from leaf_ordering.tree.validator import Validator
-  from leaf_ordering.shuffle import random_shuffle_dataset
-except ImportError:
-  print("""
-  Imports failed!
-  You've probably forgotten to run python setup.py build_ext --inplace
-  """)
-  sys.exit()
+#try:
+from leaf_ordering.tree.graph import Graph
+from leaf_ordering.pgm.reader import PGMReader
+from leaf_ordering.pgm.writer import PGMWriter
+from leaf_ordering.tree.validator import Validator
+from leaf_ordering.shuffle import random_shuffle_dataset
+#except ImportError:
+#  print("""
+#  Imports failed!
+#  You've probably forgotten to run python setup.py build_ext --inplace
+#  """)
+#  sys.exit()
 
 # creating argument parser and adding some arguments
 parser = argparse.ArgumentParser()
@@ -30,7 +30,7 @@ if not os.path.exists(path):
 graph = Graph()
 
 # loading the first test dataset
-reader = PGMReader(path)
+reader = PGMReader(path.encode('utf-8'))
 
 # reading and processing the data
 dataset = reader.read()
@@ -59,4 +59,4 @@ data = graph.get_data()
 
 # initializing the writer and writing test data to disk
 writer = PGMWriter(reader.maximum_gray)
-writer.write("test_a.pgm", data)
+writer.write("test_a.pgm".encode('utf-8'), data)
