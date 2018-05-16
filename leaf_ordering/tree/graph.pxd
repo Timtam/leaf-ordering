@@ -12,3 +12,4 @@ cdef class Graph(Node):
   cdef void build_distances_matrix(Graph self, int[:, :] dataset)
   cpdef sort_a(Graph self)
   cpdef get_data(Graph self)
+  cpdef get_distance(Graph self)

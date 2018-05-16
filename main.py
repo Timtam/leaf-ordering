@@ -30,12 +30,18 @@ random.shuffle(dataset)
 # build the graph from the dataset
 graph.build(dataset)
 
+# printing the overall distance before sorting
+print("Overall distance before ordering: {0}".format(graph.get_distance()))
+
 # sorting
 graph.sort_a()
 
 # validation of the graph
 validator = Validator()
 validator.check_cycle(graph)
+
+# printing the overall distance after sorting
+print("Overall distance after ordering: {0}".format(graph.get_distance()))
 
 # retrieving the ordered data from the graph
 data = graph.get_data()
