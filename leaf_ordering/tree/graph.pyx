@@ -22,6 +22,8 @@ cdef extern from * nogil:
     #define log2(x) (log(x)/log(2))
   #endif
   
+  #define GETI(x) (floor(sqrt(8*x + 1)-1)/2)
+  #define GETJ(i,x) (x-(i*(i+1)/2))
   #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
   double* min_element(double *start, double *end)
   {
@@ -34,6 +36,8 @@ cdef extern from * nogil:
     return min;
   }
   """
+  int GETI(int x)
+  int GETJ(int i, int x)
   int IDX(int i, int j)
   double *min_element(double *start, double*end)
 
