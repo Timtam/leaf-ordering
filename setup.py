@@ -84,7 +84,8 @@ extensions = [
   Extension(
     "leaf_ordering.tree.graph",
     [
-      "leaf_ordering/tree/graph.pyx"
+      "leaf_ordering/tree/graph.pyx",
+      "leaf_ordering/tree/matrix.c"
     ],
     language="c"
   ),

@@ -7,39 +7,7 @@ from libc.math cimport ceil, log2, pow, sqrt
 from libc.stdlib cimport malloc, free
 
 from .node cimport Node
-
-# some manual c-function bindings
-cdef extern from * nogil:
-  """
-  // Fix for older C89 compiler for functions fmin, fmax, log2
-  #ifndef fmin
-    #define fmin(x,y) (x<y?x:y)
-  #endif
-  #ifndef fmax
-    #define fmax(x,y) (x>y?x:y)
-  #endif
-  #ifndef log2
-    #define log2(x) (log(x)/log(2))
-  #endif
-  
-  #define GETI(x) (floor(sqrt(8*x + 1)-1)/2)
-  #define GETJ(i,x) (x-(i*(i+1)/2)) //without i: (x-(pow((floor(sqrt(8*x + 1)-1)/2), 2)+(floor(sqrt(8*x + 1)-1)/2))/2))
-  #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
-  double* min_element(double *start, double *end)
-  {
-    double *min = start++;
-    if (start == end) return end;
-    
-    for (; start != end; ++start)
-      if (*start < *min) min = start;
-
-    return min;
-  }
-  """
-  int GETI(int x)
-  int GETJ(int i, int x)
-  int IDX(int i, int j)
-  double *min_element(double *start, double*end)
+from .matrix cimport IDX, min_element
 
 # graph class
 # is basically just a derived node, but with additional methods
