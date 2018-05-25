@@ -1,3 +1,6 @@
+# cython: profile=True
+# distutils: define_macros=CYTHON_TRACE_NOGIL=1
+
 from ..exceptions import TreeError
 
 cimport cython
@@ -5,9 +8,11 @@ from cython.parallel cimport prange
 from libc.limits cimport INT_MAX
 from libc.math cimport ceil, log2, pow, sqrt
 from libc.stdlib cimport malloc, free
+from libc.string cimport memcpy, memset
+from libcpp.queue cimport priority_queue
 
 from .node cimport Node
-from .matrix cimport IDX, min_element
+from .matrix cimport GETI, GETJ, IDX, min_element, Distance
 
 # graph class
 # is basically just a derived node, but with additional methods
@@ -33,6 +38,11 @@ cdef class Graph(Node):
     self.data_height = n
     self.data_width = dataset.shape[1]
     # building the distances matrix (see below)
+    self.build_distances_matrix(dataset)
+    # clustering all leaves
+    dataset = self.build_cluster(dataset)
+    # rebuilding distances matrix
+    free(<void*>self.distances)
     self.build_distances_matrix(dataset)
     # inserting all leaves
     for i in xrange(n):
@@ -85,6 +95,7 @@ cdef class Graph(Node):
   @cython.wraparound(False)
   @cython.nonecheck(False)
   cdef void build_distances_matrix(Graph self, int[:, :] dataset):
+    cdef int m = self.data_width
     cdef int n = self.data_height
     self.distances = <double*>malloc((n+1)*n/2*sizeof(double))
     cdef int i, j, k
@@ -95,11 +106,12 @@ cdef class Graph(Node):
     for i in prange(n, nogil=True):
       for j in xrange(i+1):
         if i == j:
-          self.distances[IDX(i,j)] = .0
-        d = 0
-        for k in xrange(dataset.shape[1]):
-          d = d + pow(dataset[j,k]-dataset[i,k], 2)
-        self.distances[IDX(i,j)] = sqrt(d)
+          self.distances[IDX(i,j)] = -1.0
+        else:
+          d = 0
+          for k in xrange(m):
+            d = d + pow(dataset[j,k]-dataset[i,k], 2)
+          self.distances[IDX(i,j)] = sqrt(d)
 
   # first heuristics implementation
   # we start ordering at level (graph.height - 1)
@@ -113,7 +125,7 @@ cdef class Graph(Node):
   cpdef sort_a(Graph self):
     cdef double[4] dist;
     cdef double* min_dist
-    cdef double dist_diff
+    cdef double dist_diff = .0
     cdef int i, j
     cdef list nodes
     cdef Node leaf_a, leaf_b
@@ -195,3 +207,41 @@ cdef class Graph(Node):
       node_b = nodes[i+1]
       dist += self.distances[IDX(node_a.data_offset, node_b.data_offset)]
     return dist
+
+  cdef int[:, :] build_cluster(Graph self, int[:, :] dataset):
+    cdef priority_queue[Distance] q
+    cdef Distance d
+    cdef int n = self.data_height
+    cdef int m = self.data_width
+    cdef int i
+    cdef int row, col
+    cdef bint * clustered = <bint*>malloc(n*sizeof(bint))
+    cdef int *buf = <int*>malloc(m*n*sizeof(int))
+    cdef int offset = 0
+    cdef int[:, :] res
+    if clustered == NULL:
+      return dataset
+    if buf == NULL:
+      free(<void*>clustered)
+      return dataset
+    memset(<void*>clustered, False, n*sizeof(bint))
+    for i in xrange((n+1)*n/2):
+      if self.distances[i] >= 0:
+        d.distance = self.distances[i]
+        d.index = i
+        q.push(d)
+    while not q.empty():
+      d = q.top()
+      q.pop()
+      row = GETI(d.index)
+      col = GETJ(row,d.index)
+      if clustered[row] == True or clustered[col] == True:
+        continue
+      memcpy(buf+offset, (&dataset[0,0])+m*row, m*sizeof(int))
+      offset += m
+      clustered[row] = True
+      memcpy(buf+offset, (&dataset[0,0])+m*col, m*sizeof(int))
+      offset += m
+      clustered[col] = True
+    res = (<int[:n, :m]>buf).copy()
+    return res

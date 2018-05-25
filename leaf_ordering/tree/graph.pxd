@@ -15,3 +15,4 @@ cdef class Graph(Node):
   cpdef sort_a(Graph self)
   cpdef get_data(Graph self)
   cpdef get_distance(Graph self)
+  cdef int[:, :] build_cluster(Graph self, int[:, :] dataset)

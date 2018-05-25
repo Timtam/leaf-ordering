@@ -38,6 +38,8 @@ class build_ext_compiler_check(build_ext):
         if ext.name in OPENMP:
           comp_args.append('-fopenmp')
           link_args.append('-fopenmp')
+        if ext.language == "c++":
+          comp_args.append('-std=c++11')
         if DEBUG_MODE:
           comp_args += ['-g', '-O0']
       elif compiler == 'msvc':
@@ -85,9 +87,9 @@ extensions = [
     "leaf_ordering.tree.graph",
     [
       "leaf_ordering/tree/graph.pyx",
-      "leaf_ordering/tree/matrix.c"
+      "leaf_ordering/tree/matrix.cpp"
     ],
-    language="c"
+    language="c++"
   ),
   Extension(
     "leaf_ordering.tree.node",
