@@ -34,7 +34,7 @@ cdef class Graph(Node):
       raise TreeError("tree already exists")
     if n > INT_MAX:
       raise TreeError("unable to process more data entries than {0}".format(INT_MAX))
-    self.height = <int>ceil(log2(n))
+    self.height = <int>ceil(log2(<double>n))
     self.data_height = n
     self.data_width = dataset.shape[1]
     # building the distances matrix (see below)

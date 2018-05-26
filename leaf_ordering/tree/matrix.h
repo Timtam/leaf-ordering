@@ -12,10 +12,10 @@
     #define fmax(x,y) (x>y?x:y)
   #endif
   #ifndef log2
-    #define log2(x) (log(x)/log(2))
+    #define log2(x) (log(x)/log((double)2))
   #endif
   
-  #define GETI(x) (floor(sqrt(8*x + 1)-1)/2)
+  #define GETI(x) (floor(sqrt((double)(8*x + 1))-1)/2)
   #define GETJ(i,x) (x-(i*(i+1)/2)) //without i: (x-(pow((floor(sqrt(8*x + 1)-1)/2), 2)+(floor(sqrt(8*x + 1)-1)/2))/2))
   #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
 
