@@ -1,0 +1,63 @@
+\documentclass[a4paper, 10pt, twoside, onecolumn, parskip]{scrartcl}
+%\KOMAoptions{DIV=last}
+\usepackage[left=4cm,right=2cm,top=2cm,bottom=4cm]{geometry}
+\usepackage[ngerman]{babel}	% deutsche Einstellungen
+\usepackage[utf8]{inputenc}	% Eingabekodierung für Umlaute im Quellcode
+\usepackage[T1]{fontenc}
+\usepackage[hyphens]{url}
+\usepackage[breaklinks=true, hidelinks]{hyperref}
+\usepackage{amssymb} % mathematische Sonderzeichen
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage[autostyle=true,german=quotes]{csquotes}
+
+\setlist{itemsep=.5em, parsep=.0em}
+\hyphenchar\font=\string"7F
+
+\title{Übung 4 Algorithm Engineering} % Titel
+\author{{Toni Barth} und {Max Haarbach}} % Autor
+\date{\today}			% \today wird durch das aktuelle Datum ersetzt
+
+\begin{document}
+    \maketitle				% hier wird der Titel dann gedruckt
+
+    \section{Ziele} \label{sec:ziele}
+
+    Durch die Experimente sollen sowohl
+    \begin{itemize}
+        \item die Laufzeiten der Heuristiken bei unterschiedlichen Größenordnungen bezüglich der Anzahl der Testobjekte als auch
+        \item die Güte aufgrund der Ähnlichkeiten zu den jeweiligen Originalbildern
+    \end{itemize}
+    ermittelt und verglichen werden.
+
+    \section{Faktoren} \label{sec:faktoren}
+
+    Beim \enquote{Leaf-ordering} sind lediglich 2 Faktoren von Bedeutung:
+
+    Zum Einen bestimmen die Größe der Bilder, die im Endeffekt die Anzahl der Testobjekte widerspiegeln, die Laufzeiten der Heuristiken.
+    Zum Anderen spielt auch deren Struktur oder Art eine Rolle, die sich allerdings schwer in konkrete Messgrößen oder Werte fassen lassen.
+
+    \section{Testinstanzen} \label{sec:testinstanzen}
+
+    Gemäß der~\nameref{sec:faktoren} werden auch die Testinstanzen, die durch Grauwert-Bilder realisiert sind, in die entsprechenden Kategorien unterteilt:
+    \begin{itemize}
+        \item Größen:
+        \begin{itemize}
+            \item 4
+            \item 50
+            \item 256
+            \item 640
+            \item 1280
+            \item 1920
+            \item 5472
+        \end{itemize}
+
+        \item Arten:
+        \begin{itemize}
+            \item symmetrische Testbilder
+            \item Bilder der realen Welt
+            \item Farb- bzw. Grau-Übergänge
+        \end{itemize}
+    \end{itemize}
+
+\end{document}
