@@ -6,12 +6,13 @@ cdef class Node:
 
   # constructor
   # taking its root as parameter
-  def __init__(Node self, Node root):
+  def __init__(Node self, Node root, unsigned int node_index):
     self.left = None
     self.right = None
     self.previous = None
     self.level = 0
     self.data = NULL
+    self.node_index = node_index
     self.set_root(root)
 
   # checks if this node is a leaf

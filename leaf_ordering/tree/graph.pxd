@@ -7,6 +7,7 @@ cdef class Graph(Node):
   cdef double *distances
   cdef int data_height
   cdef int data_width  
+  cdef unsigned int node_offset
 
   cpdef build(Graph self, int[:, :] dataset)
   cdef void insert_at(Graph self, int where, int *what)

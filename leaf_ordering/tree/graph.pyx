@@ -20,10 +20,11 @@ from .matrix cimport GETI, GETJ, IDX, min_element, Distance
 cdef class Graph(Node):
   # constructor
   def __init__(Graph self):
-    Node.__init__(self, self)
+    Node.__init__(self, self, 0)
     self.height = 0
     self.data_width = 0
     self.data_height = 0
+    self.node_offset = 1
   
   # builds the binary tree
   # receives the leaf data as parameter
@@ -62,13 +63,15 @@ cdef class Graph(Node):
       pos = (where>>i)&0x1
       if pos == 0:
         if current.left is None:
-          next = Node(self)
+          next = Node(self, self.node_offset)
           current.set_left(next)
+          self.node_offset += 1
         current = current.left
       elif pos == 1:
         if current.right is None:
-          next = Node(self)
+          next = Node(self, self.node_offset)
           current.set_right(next)
+          self.node_offset += 1
         current = current.right
     current.set_data(what, where)
 
@@ -78,6 +81,7 @@ cdef class Graph(Node):
     self.height = 0
     self.data_height = 0
     self.data_width = 0
+    self.node_offset = 1
     if self.distances != NULL:
       free(<void*>self.distances)
       self.distances = NULL

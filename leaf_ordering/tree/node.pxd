@@ -9,6 +9,7 @@ cdef class Node:
   cdef readonly Node root
   cdef readonly int level
   cdef int data_offset
+  cdef unsigned int node_index
 
   cpdef bint is_leaf(Node self)
   cpdef bint is_root(Node self)
