@@ -14,6 +14,7 @@ cdef class Graph(Node):
   cpdef clear(Graph self)
   cdef void build_distances_matrix(Graph self, int[:, :] dataset)
   cpdef sort_a(Graph self)
+  cpdef sort_b(Graph self)
   cpdef get_data(Graph self)
   cpdef get_distance(Graph self)
   cdef int[:, :] build_cluster(Graph self, int[:, :] dataset)

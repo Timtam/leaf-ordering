@@ -1,3 +1,5 @@
+# cython: profile=True
+# distutils: define_macros=CYTHON_TRACE_NOGIL=1
 cimport cython
 
 # a node class, which implements basic functionalities
@@ -115,3 +117,36 @@ cdef class Node:
       l.append(self.right)
       l += self.right.get_children()
     return l
+
+  # a recursive helper method for second heuristics
+  cdef void sort_b_rec(Node self, double[:, :, :] m_dist):
+    pass
+
+  # backtracks until it finds the parent with the given level
+  cpdef Node get_parent_at_level(Node self, int level):
+    if self.previous.level != level:
+      return self.previous.get_parent_at_level(level)
+    return self.previous
+
+  # those methods rotate the (sub)tree until the given node is the bottom left (or right) one
+  cdef void rotate_until_bottom_left_node(Node self, Node new_left):
+    cdef Node next_parent
+    if new_left.level == self.level + 1:
+      if not self.left is new_left:
+        self.rotate()
+    else:
+      next_parent = new_left.get_parent_at_level(self.level + 1)
+      if not self.left is next_parent:
+        self.rotate()
+      next_parent.rotate_until_bottom_left_node(new_left)
+
+  cdef void rotate_until_bottom_right_node(Node self, Node new_right):
+    cdef Node next_parent
+    if new_right.level == self.level + 1:
+      if not self.right is new_right:
+        self.rotate()
+    else:
+      next_parent = new_right.get_parent_at_level(self.level + 1)
+      if not self.right is next_parent:
+        self.rotate()
+      next_parent.rotate_until_bottom_right_node(new_right)

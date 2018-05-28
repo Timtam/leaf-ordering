@@ -212,6 +212,7 @@ cdef class Graph(Node):
       dist += self.distances[IDX(node_a.data_offset, node_b.data_offset)]
     return dist
 
+  # clustering the tree
   cdef int[:, :] build_cluster(Graph self, int[:, :] dataset):
     cdef priority_queue[Distance] q
     cdef Distance d
@@ -249,3 +250,13 @@ cdef class Graph(Node):
       clustered[col] = True
     res = (<int[:n, :m]>buf).copy()
     return res
+
+  # the second heuristics (by Bar-Joseph and Ziv)
+  cpdef sort_b(Graph self):
+    cdef unsigned int leaf_count = len(self.get_children_at_level(self.height))
+    cdef unsigned int node_count = self.get_child_count()
+    cdef double * m_dist = <double*>malloc(node_count*leaf_count*leaf_count*sizeof(double))
+    if m_dist == NULL:
+      raise MemoryError()
+    self.sort_b_rec(<double[:node_count, :leaf_count, :leaf_count]>m_dist)
+    free(<void*>m_dist)
