@@ -23,3 +23,4 @@ cdef class Node:
   cpdef list get_children_at_level(Node self, int level)
   cdef Node get_bottom_left_node(Node self)
   cdef Node get_bottom_right_node(Node self)
+  cpdef list get_children(Node self)

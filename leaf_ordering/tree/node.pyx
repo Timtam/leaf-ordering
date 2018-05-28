@@ -48,12 +48,7 @@ cdef class Node:
 
   # returns the overall amount of this node's children
   cpdef unsigned int get_child_count(Node self):
-    cdef unsigned int size = 0
-    if not self.left is None:
-      size += 1 + self.left.get_child_count()
-    if not self.right is None:
-      size += 1 + self.right.get_child_count()
-    return size
+    return len(self.get_children())
 
   # exchanges both child nodes
   cdef void rotate(Node self):
@@ -107,3 +102,15 @@ cdef class Node:
     if not self.right is None:
       return self.right.get_bottom_left_node()
     return self.left.get_bottom_right_node()
+
+  cpdef list get_children(Node self):
+    cdef list l = []
+    if self.is_leaf():
+      return []
+    if not self.left is None:
+      l.append(self.left)
+      l += self.left.get_children()
+    if not self.right is None:
+      l.append(self.right)
+      l += self.right.get_children()
+    return l
