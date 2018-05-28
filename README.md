@@ -19,4 +19,5 @@ As a measure for similarity we use the euclidean distance between the column vec
 
 * input: `test_xyz.pgm` (directory `datasets`)
 * output: `test_a.pgm` (**main** directory)
-* heuristic 1 can be found in method `sort_a` from class `Graph` in the `graph.pyx`
+* heuristic 1 can be found in method `sort_a` from class `Graph` in `graph.pyx`
+* heuristic 2 can be found in method `sort_b` from class `Graph` in `graph.pyx`
