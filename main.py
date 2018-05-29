@@ -44,7 +44,7 @@ def main(path):
   graph.build(dataset)
 
   # printing the overall distance before sorting
-  print("Overall distance before ordering: {0}".format(graph.get_distance()))
+  print("Overall distance before ordering with first heuristic: {0}".format(graph.get_distance()))
 
   # sorting
   graph.sort_a()
@@ -54,7 +54,7 @@ def main(path):
   validator.check_cycle(graph)
 
   # printing the overall distance after sorting
-  print("Overall distance after ordering: {0}".format(graph.get_distance()))
+  print("Overall distance after ordering with first heuristic: {0}".format(graph.get_distance()))
 
   # retrieving the ordered data from the graph
   data = graph.get_data()
@@ -62,6 +62,32 @@ def main(path):
   # initializing the writer and writing test data to disk
   writer = PGMWriter(reader.maximum_gray)
   writer.write("test_a.pgm".encode('utf-8'), data)
+
+  # clearing the graph
+  graph.clear()
+
+  # build the graph from the dataset
+  graph.build(dataset)
+
+  # printing the overall distance before sorting
+  print("Overall distance before ordering with second heuristic: {0}".format(graph.get_distance()))
+
+  # sorting
+  graph.sort_b()
+
+  # validation of the graph
+  validator = Validator()
+  validator.check_cycle(graph)
+
+  # printing the overall distance after sorting
+  print("Overall distance after ordering with second heuristic: {0}".format(graph.get_distance()))
+
+  # retrieving the ordered data from the graph
+  data = graph.get_data()
+
+  # initializing the writer and writing test data to disk
+  writer = PGMWriter(reader.maximum_gray)
+  writer.write("test_b.pgm".encode('utf-8'), data)
 
 if __name__ == '__main__':
   main(path)
