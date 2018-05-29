@@ -275,7 +275,7 @@ cdef class Graph(Node):
     m_dist = <double*>malloc(node_count*(leaf_count+1)*leaf_count/2*sizeof(double))
     if m_dist == NULL:
       raise MemoryError()
-    for i in xrange(node_count*(leaf_count+1)*leaf_count/2):
+    for i in prange(node_count*(leaf_count+1)*leaf_count/2, nogil=True):
       m_dist[i] = -1
     mm_dist = <double[:node_count, :(leaf_count+1)*leaf_count/2]>m_dist
     for i in xrange(llc):

@@ -3,6 +3,7 @@
 cimport cython
 
 from .matrix cimport IDX
+from libc.float cimport DBL_MAX
 
 # a node class, which implements basic functionalities
 
@@ -130,9 +131,7 @@ cdef class Node:
     cdef unsigned int vc, wc
     cdef unsigned int i, j
     cdef double tmp
-    m_dist[self.branch_index, IDX(x.leaf_index, y.leaf_index)] = 0
-    if self.is_leaf():
-      return
+    m_dist[self.branch_index, IDX(x.leaf_index, y.leaf_index)] = DBL_MAX
     self.rotate_until_bottom_left_node(x)
     self.rotate_until_bottom_right_node(y)
     if not self.right:
@@ -155,9 +154,9 @@ cdef class Node:
         v.rotate_until_bottom_right_node(v_nodes[i])
         w.rotate_until_bottom_left_node(w_nodes[j])
         w.rotate_until_bottom_right_node(y)
-        if m_dist[v.branch_index, IDX(x.leaf_index, (<Node>v_nodes[i]).leaf_index)] == -1:
+        if m_dist[v.branch_index, IDX(x.leaf_index, (<Node>v_nodes[i]).leaf_index)] == -1 and not v.is_leaf():
           v.sort_b_rec(x, <Node>v_nodes[i], m_dist, dists)
-        if m_dist[w.branch_index, IDX((<Node>w_nodes[j]).leaf_index, y.leaf_index)] == -1:
+        if m_dist[w.branch_index, IDX((<Node>w_nodes[j]).leaf_index, y.leaf_index)] == -1 and not w.is_leaf():
           w.sort_b_rec(<Node>w_nodes[j], y, m_dist, dists)
         tmp = m_dist[v.branch_index, IDX(x.leaf_index, (<Node>v_nodes[i]).leaf_index)] + m_dist[w.branch_index, IDX((<Node>w_nodes[j]).leaf_index, y.leaf_index)] + dists[IDX((<Node>v_nodes[i]).leaf_index, (<Node>w_nodes[j]).leaf_index)]
         if tmp < m_dist[self.branch_index, IDX(x.leaf_index, y.leaf_index)]:
