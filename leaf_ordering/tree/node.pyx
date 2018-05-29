@@ -10,13 +10,13 @@ cdef class Node:
 
   # constructor
   # taking its root as parameter
-  def __init__(Node self, Node root, unsigned int node_index):
+  def __init__(Node self, Node root, int branch_index):
     self.left = None
     self.right = None
     self.previous = None
     self.level = 0
     self.data = NULL
-    self.node_index = node_index
+    self.branch_index = branch_index
     self.set_root(root)
 
   # checks if this node is a leaf
@@ -47,9 +47,9 @@ cdef class Node:
       p = p.previous
     
   # sets the dataset for this node
-  cdef void set_data(Node self, int *data, int data_offset):
+  cdef void set_data(Node self, int *data, int leaf_index):
     self.data = data
-    self.data_offset = data_offset
+    self.leaf_index = leaf_index
 
   # returns the overall amount of this node's children
   cpdef unsigned int get_child_count(Node self):
@@ -121,13 +121,16 @@ cdef class Node:
     return l
 
   # a recursive helper method for second heuristics
-  cdef void sort_b_rec(Node self, Node x, Node y, double[:, :, :] m_dist, double *dists):
+  @cython.boundscheck(False)
+  @cython.wraparound(False)
+  @cython.nonecheck(False)
+  cdef void sort_b_rec(Node self, Node x, Node y, double[:, :] m_dist, double *dists):
     cdef Node v, w
     cdef list v_nodes, w_nodes
     cdef unsigned int vc, wc
     cdef unsigned int i, j
     cdef double tmp
-    m_dist[self.node_index, x.data_offset, y.data_offset] = 0
+    m_dist[self.branch_index, IDX(x.leaf_index, y.leaf_index)] = 0
     if self.is_leaf():
       return
     self.rotate_until_bottom_left_node(x)
@@ -138,8 +141,8 @@ cdef class Node:
       return
     v = self.left
     w = self.right
-    v_nodes = v.get_childrenat_level(self.parent.height)
-    w_nodes = w.get_children_at_level(self.parent.height)
+    v_nodes = v.get_children_at_level(self.root.height)
+    w_nodes = w.get_children_at_level(self.root.height)
     vc = len(v_nodes)
     wc = len(w_nodes)
     for i in xrange(vc):
@@ -152,13 +155,13 @@ cdef class Node:
         v.rotate_until_bottom_right_node(v_nodes[i])
         w.rotate_until_bottom_left_node(w_nodes[j])
         w.rotate_until_bottom_right_node(y)
-        if m_dist[v.node_index, x.data_offset, (<Node>v_nodes[i]).data_offset] == -1:
+        if m_dist[v.branch_index, IDX(x.leaf_index, (<Node>v_nodes[i]).leaf_index)] == -1:
           v.sort_b_rec(x, <Node>v_nodes[i], m_dist, dists)
-        if m_dist[w.node_index, (<Node>w_nodes[j]).data_offset, y.data_offset] == -1:
+        if m_dist[w.branch_index, IDX((<Node>w_nodes[j]).leaf_index, y.leaf_index)] == -1:
           w.sort_b_rec(<Node>w_nodes[j], y, m_dist, dists)
-        tmp = m_dist[v.node_index, x.data_offset, (<Node>v_nodes[i]).data_offset] + m_dist[w.node_index, (<Node>w_nodes[j]).data_offset, y.data_offset] + dists[IDX((<Node>v_nodes[i]).data_offset, (<Node>w_nodes[j]).data_offset)]
-        if tmp < m_dist[self.node_index, x.data_offset, y.data_offset]:
-          m_dist[self.node_index, x.data_offset, y.data_offset] = tmp
+        tmp = m_dist[v.branch_index, IDX(x.leaf_index, (<Node>v_nodes[i]).leaf_index)] + m_dist[w.branch_index, IDX((<Node>w_nodes[j]).leaf_index, y.leaf_index)] + dists[IDX((<Node>v_nodes[i]).leaf_index, (<Node>w_nodes[j]).leaf_index)]
+        if tmp < m_dist[self.branch_index, IDX(x.leaf_index, y.leaf_index)]:
+          m_dist[self.branch_index, IDX(x.leaf_index, y.leaf_index)] = tmp
 
   # backtracks until it finds the parent with the given level
   cpdef Node get_parent_at_level(Node self, int level):

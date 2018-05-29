@@ -24,7 +24,7 @@ cdef class Graph(Node):
     self.height = 0
     self.data_width = 0
     self.data_height = 0
-    self.node_offset = 1
+    self.branch_offset = 1
   
   # builds the binary tree
   # receives the leaf data as parameter
@@ -63,15 +63,17 @@ cdef class Graph(Node):
       pos = (where>>i)&0x1
       if pos == 0:
         if current.left is None:
-          next = Node(self, self.node_offset)
+          next = Node(self, self.branch_offset)
           current.set_left(next)
-          self.node_offset += 1
+          if next.level < self.height:
+            self.branch_offset += 1
         current = current.left
       elif pos == 1:
         if current.right is None:
-          next = Node(self, self.node_offset)
+          next = Node(self, self.branch_offset)
           current.set_right(next)
-          self.node_offset += 1
+          if next.level < self.height:
+            self.branch_offset += 1
         current = current.right
     current.set_data(what, where)
 
@@ -81,7 +83,7 @@ cdef class Graph(Node):
     self.height = 0
     self.data_height = 0
     self.data_width = 0
-    self.node_offset = 1
+    self.branch_offset = 1
     if self.distances != NULL:
       free(<void*>self.distances)
       self.distances = NULL
@@ -148,20 +150,20 @@ cdef class Graph(Node):
         # a
         leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_left_node()
-        dist[0] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        dist[0] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
         # b
         leaf_a = node_a.get_bottom_left_node()
-        dist[1] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        dist[1] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
         if j > 0:
           dist[1] += dist_diff
         # c
         leaf_b = node_b.get_bottom_right_node()
-        dist[2] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        dist[2] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
         if j > 0:
           dist[2] += dist_diff
         # d
         leaf_a = node_a.get_bottom_right_node()
-        dist[3] = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)]
+        dist[3] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
         # comparing and rotating
         min_dist = min_element(dist, dist + 4)
         if min_dist - dist == 1 or min_dist - dist == 2:
@@ -171,7 +173,7 @@ cdef class Graph(Node):
         # calculating distance difference
         leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_right_node()
-        dist_diff = self.distances[IDX(leaf_a.data_offset, leaf_b.data_offset)] - min_dist[0]
+        dist_diff = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)] - min_dist[0]
 
   # copies all datasets within the leaves together and returns them
   @cython.boundscheck(False)
@@ -209,7 +211,7 @@ cdef class Graph(Node):
     for i in xrange(1, n - 2, 2):
       node_a = nodes[i]
       node_b = nodes[i+1]
-      dist += self.distances[IDX(node_a.data_offset, node_b.data_offset)]
+      dist += self.distances[IDX(node_a.leaf_index, node_b.leaf_index)]
     return dist
 
   # clustering the tree
@@ -256,11 +258,11 @@ cdef class Graph(Node):
     cdef list left_leaves
     cdef list right_leaves
     cdef unsigned int leaf_count
-    cdef unsigned int node_count = self.get_child_count()
+    cdef unsigned int node_count = self.branch_offset
     cdef unsigned int llc, rlc
     cdef int i, j
     cdef double * m_dist
-    cdef double[:, :, :] mm_dist
+    cdef double[:, :] mm_dist
     if not self.right:
       raise TreeError("no right tree")
     if not self.left:
@@ -270,12 +272,12 @@ cdef class Graph(Node):
     llc = len(left_leaves)
     rlc = len(right_leaves)
     leaf_count = llc + rlc
-    m_dist = <double*>malloc(node_count*leaf_count*leaf_count*sizeof(double))
+    m_dist = <double*>malloc(node_count*(leaf_count+1)*leaf_count/2*sizeof(double))
     if m_dist == NULL:
       raise MemoryError()
-    for i in xrange(node_count*leaf_count*leaf_count):
+    for i in xrange(node_count*(leaf_count+1)*leaf_count/2):
       m_dist[i] = -1
-    mm_dist = <double[:node_count, :leaf_count, :leaf_count]>m_dist
+    mm_dist = <double[:node_count, :(leaf_count+1)*leaf_count/2]>m_dist
     for i in xrange(llc):
       for j in xrange(rlc):
         self.sort_b_rec(<Node>left_leaves[i], <Node>right_leaves[j], mm_dist, self.distances)
