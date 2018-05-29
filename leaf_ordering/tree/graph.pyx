@@ -273,8 +273,10 @@ cdef class Graph(Node):
     m_dist = <double*>malloc(node_count*leaf_count*leaf_count*sizeof(double))
     if m_dist == NULL:
       raise MemoryError()
+    for i in xrange(node_count*leaf_count*leaf_count):
+      m_dist[i] = -1
     mm_dist = <double[:node_count, :leaf_count, :leaf_count]>m_dist
     for i in xrange(llc):
       for j in xrange(rlc):
-        self.sort_b_rec(<Node>left_leaves[i], <Node>right_leaves[j], mm_dist)
+        self.sort_b_rec(<Node>left_leaves[i], <Node>right_leaves[j], mm_dist, self.distances)
     free(<void*>m_dist)

@@ -2,6 +2,8 @@
 # distutils: define_macros=CYTHON_TRACE_NOGIL=1
 cimport cython
 
+from .matrix cimport IDX
+
 # a node class, which implements basic functionalities
 
 cdef class Node:
@@ -119,8 +121,44 @@ cdef class Node:
     return l
 
   # a recursive helper method for second heuristics
-  cdef void sort_b_rec(Node self, Node x, Node y, double[:, :, :] m_dist):
-    pass
+  cdef void sort_b_rec(Node self, Node x, Node y, double[:, :, :] m_dist, double *dists):
+    cdef Node v, w
+    cdef list v_nodes, w_nodes
+    cdef unsigned int vc, wc
+    cdef unsigned int i, j
+    cdef double tmp
+    m_dist[self.node_index, x.data_offset, y.data_offset] = 0
+    if self.is_leaf():
+      return
+    self.rotate_until_bottom_left_node(x)
+    self.rotate_until_bottom_right_node(y)
+    if not self.right:
+      return
+    if not self.left:
+      return
+    v = self.left
+    w = self.right
+    v_nodes = v.get_childrenat_level(self.parent.height)
+    w_nodes = w.get_children_at_level(self.parent.height)
+    vc = len(v_nodes)
+    wc = len(w_nodes)
+    for i in xrange(vc):
+      if v_nodes[i] is x:
+        continue
+      for j in xrange(wc):
+        if w_nodes[j] is y:
+          continue
+        v.rotate_until_bottom_left_node(x)
+        v.rotate_until_bottom_right_node(v_nodes[i])
+        w.rotate_until_bottom_left_node(w_nodes[j])
+        w.rotate_until_bottom_right_node(y)
+        if m_dist[v.node_index, x.data_offset, (<Node>v_nodes[i]).data_offset] == -1:
+          v.sort_b_rec(x, <Node>v_nodes[i], m_dist, dists)
+        if m_dist[w.node_index, (<Node>w_nodes[j]).data_offset, y.data_offset] == -1:
+          w.sort_b_rec(<Node>w_nodes[j], y, m_dist, dists)
+        tmp = m_dist[v.node_index, x.data_offset, (<Node>v_nodes[i]).data_offset] + m_dist[w.node_index, (<Node>w_nodes[j]).data_offset, y.data_offset] + dists[IDX((<Node>v_nodes[i]).data_offset, (<Node>w_nodes[j]).data_offset)]
+        if tmp < m_dist[self.node_index, x.data_offset, y.data_offset]:
+          m_dist[self.node_index, x.data_offset, y.data_offset] = tmp
 
   # backtracks until it finds the parent with the given level
   cpdef Node get_parent_at_level(Node self, int level):
