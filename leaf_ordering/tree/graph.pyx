@@ -253,10 +253,28 @@ cdef class Graph(Node):
 
   # the second heuristics (by Bar-Joseph and Ziv)
   cpdef sort_b(Graph self):
-    cdef unsigned int leaf_count = len(self.get_children_at_level(self.height))
+    cdef list left_leaves
+    cdef list right_leaves
+    cdef unsigned int leaf_count
     cdef unsigned int node_count = self.get_child_count()
-    cdef double * m_dist = <double*>malloc(node_count*leaf_count*leaf_count*sizeof(double))
+    cdef unsigned int llc, rlc
+    cdef int i, j
+    cdef double * m_dist
+    cdef double[:, :, :] mm_dist
+    if not self.right:
+      raise TreeError("no right tree")
+    if not self.left:
+      raise TreeError("no left tree")
+    left_leaves = self.left.get_children_at_level(self.height)
+    right_leaves = self.right.get_children_at_level(self.height)
+    llc = len(left_leaves)
+    rlc = len(right_leaves)
+    leaf_count = llc + rlc
+    m_dist = <double*>malloc(node_count*leaf_count*leaf_count*sizeof(double))
     if m_dist == NULL:
       raise MemoryError()
-    self.sort_b_rec(<double[:node_count, :leaf_count, :leaf_count]>m_dist)
+    mm_dist = <double[:node_count, :leaf_count, :leaf_count]>m_dist
+    for i in xrange(llc):
+      for j in xrange(rlc):
+        self.sort_b_rec(<Node>left_leaves[i], <Node>right_leaves[j], mm_dist)
     free(<void*>m_dist)

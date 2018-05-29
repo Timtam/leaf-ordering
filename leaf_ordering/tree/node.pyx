@@ -119,7 +119,7 @@ cdef class Node:
     return l
 
   # a recursive helper method for second heuristics
-  cdef void sort_b_rec(Node self, double[:, :, :] m_dist):
+  cdef void sort_b_rec(Node self, Node x, Node y, double[:, :, :] m_dist):
     pass
 
   # backtracks until it finds the parent with the given level
