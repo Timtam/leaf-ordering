@@ -18,7 +18,7 @@ except ImportError:
 
 # creating argument parser and adding some arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--dataset', help='path to the pgm file to use', type=str, default=os.path.join(os.path.dirname(__file__), 'datasets', 'test_3_1280.pgm'))
+parser.add_argument('-d', '--dataset', help='path to the pgm file to use', type=str, default=os.path.join(os.path.dirname(__file__), 'datasets', 'gradient/g1_100x100.pgm'))
 
 args = parser.parse_args()
 path = args.dataset
