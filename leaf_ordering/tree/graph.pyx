@@ -5,6 +5,7 @@ from ..exceptions import TreeError
 
 cimport cython
 from cython.parallel cimport prange
+from libc.float cimport DBL_MAX
 from libc.limits cimport INT_MAX
 from libc.math cimport ceil, log2, pow, sqrt
 from libc.stdlib cimport malloc, free
@@ -24,7 +25,7 @@ cdef class Graph(Node):
     self.height = 0
     self.data_width = 0
     self.data_height = 0
-    self.branch_offset = 1
+    self.id_offset = 1
   
   # builds the binary tree
   # receives the leaf data as parameter
@@ -84,17 +85,15 @@ cdef class Graph(Node):
       pos = (where>>i)&0x1
       if pos == 0:
         if current.left is None:
-          next = Node(self, self.branch_offset)
+          next = Node(self, self.id_offset)
           current.set_left(next)
-          if next.level < self.height:
-            self.branch_offset += 1
+          self.id_offset += 1
         current = current.left
       elif pos == 1:
         if current.right is None:
-          next = Node(self, self.branch_offset)
+          next = Node(self, self.id_offset)
           current.set_right(next)
-          if next.level < self.height:
-            self.branch_offset += 1
+          self.id_offset += 1
         current = current.right
     current.set_data(what, where)
 
@@ -104,7 +103,7 @@ cdef class Graph(Node):
     self.height = 0
     self.data_height = 0
     self.data_width = 0
-    self.branch_offset = 1
+    self.id_offset = 1
     if self.distances != NULL:
       free(<void*>self.distances)
       self.distances = NULL
@@ -176,20 +175,20 @@ cdef class Graph(Node):
         # a
         leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_left_node()
-        dist[0] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
+        dist[0] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
         # b
         leaf_a = node_a.get_bottom_left_node()
-        dist[1] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
+        dist[1] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
         if j > 0:
           dist[1] += dist_diff
         # c
         leaf_b = node_b.get_bottom_right_node()
-        dist[2] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
+        dist[2] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
         if j > 0:
           dist[2] += dist_diff
         # d
         leaf_a = node_a.get_bottom_right_node()
-        dist[3] = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)]
+        dist[3] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
         # comparing and rotating
         min_dist = min_element(dist, dist + 4)
         if min_dist - dist == 1 or min_dist - dist == 2:
@@ -199,7 +198,7 @@ cdef class Graph(Node):
         # calculating distance difference
         leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_right_node()
-        dist_diff = self.distances[IDX(leaf_a.leaf_index, leaf_b.leaf_index)] - min_dist[0]
+        dist_diff = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)] - min_dist[0]
 
   # copies all datasets within the leaves together and returns them
   @cython.boundscheck(False)
@@ -237,7 +236,7 @@ cdef class Graph(Node):
     for i in xrange(1, n - 2, 2):
       node_a = nodes[i]
       node_b = nodes[i+1]
-      dist += self.distances[IDX(node_a.leaf_index, node_b.leaf_index)]
+      dist += self.distances[IDX(node_a.leaf_id, node_b.leaf_id)]
     return dist
 
   # clustering the tree
@@ -277,32 +276,70 @@ cdef class Graph(Node):
       offset += n
       clustered[col] = True
 
-  # the second heuristics (by Bar-Joseph and Ziv)
+  # the second heuristics (by Ziv Bar-Joseph et al.)
   cpdef sort_b(Graph self):
-    cdef list left_leaves
-    cdef list right_leaves
-    cdef unsigned int leaf_count
-    cdef unsigned int node_count = self.branch_offset
-    cdef unsigned int llc, rlc
-    cdef int i, j
-    cdef double * m_dist
-    cdef double[:, :] mm_dist
+    cdef dict S = {}
     if not self.right:
       raise TreeError("no right tree")
     if not self.left:
       raise TreeError("no left tree")
-    left_leaves = self.left.get_children_at_level(self.height)
-    right_leaves = self.right.get_children_at_level(self.height)
-    llc = len(left_leaves)
-    rlc = len(right_leaves)
-    leaf_count = llc + rlc
-    m_dist = <double*>malloc(node_count*(leaf_count+1)*leaf_count/2*sizeof(double))
-    if m_dist == NULL:
-      raise MemoryError()
-    for i in prange(node_count*(leaf_count+1)*leaf_count/2, nogil=True):
-      m_dist[i] = -1
-    mm_dist = <double[:node_count, :(leaf_count+1)*leaf_count/2]>m_dist
-    for i in xrange(llc):
-      for j in xrange(rlc):
-        self.sort_b_rec(<Node>left_leaves[i], <Node>right_leaves[j], mm_dist, self.distances)
-    free(<void*>m_dist)
+    self.sort_b_rec(self, S)
+
+  cdef double sort_b_rec(Graph self, Node v, dict S):
+    cdef double min, score
+    cdef list L, R, LL, LR, RL, RR, TL, TR
+    cdef Node l, r, u, w, m, k
+    cdef unsigned int i, j, I, J, ii, jj
+    if v.is_leaf():
+      S[v.id, v.leaf_id, v.leaf_id] = 0
+      return 0
+    L = v.left.get_children_at_level(self.height)
+    R = v.right.get_children_at_level(self.height)
+    if not v.left.left is None:
+      LL = v.left.left.get_children_at_level(self.height)
+    else:
+      LL = v.left.get_children_at_level(self.height)
+    if not v.left.right is None:
+      LR = v.left.right.get_children_at_level(self.height)
+    else:
+      LR = v.left.get_children_at_level(self.height)
+    if not v.right.left is None:
+      RL = v.right.left.get_children_at_level(self.height)
+    else:
+      RL = v.right.get_children_at_level(self.height)
+    if not v.left.left is None:
+      RR = v.right.right.get_children_at_level(self.height)
+    else:
+      RR = v.right.get_children_at_level(self.height)
+    for i in xrange(len(L)):
+      l = L[i]
+      for j in xrange(len(R)):
+        r = R[j]
+        S[v.left.id, l.leaf_id, r.leaf_id] = self.sort_b_rec(v.left, S)
+        S[v.right.id, l.leaf_id, r.leaf_id] = self.sort_b_rec(v.right, S)
+        for I in xrange(len(L)):
+          u = L[I]
+          for J in xrange(len(R)):
+            w = R[J]
+            min = DBL_MAX
+            if u in LR:
+              TL = LL
+            else:
+              TL = LR
+            if w in RR:
+              TR = RL
+            else:
+              TR = RR
+            for ii in xrange(len(TL)):
+              m = TL[ii]
+              for jj in xrange(len(TR)):
+                k = TR[jj]
+                if u == m:
+                  S[v.left.id, u.leaf_id, m.leaf_id] = 0
+                if w == k:
+                  S[v.right.id, w.leaf_id, k.leaf_id] = 0
+                score = S[v.left.id, u.leaf_id, m.leaf_id] + S[v.right.id, w.leaf_id, k.leaf_id] + self.distances[IDX(m.leaf_id, k.leaf_id)]
+                if score < min:
+                  min = score
+            S[v.id, u.leaf_id, w.leaf_id] = S[v.id, w.leaf_id, u.leaf_id] = min
+        return <double>S[v.id, l.leaf_id, r.leaf_id]

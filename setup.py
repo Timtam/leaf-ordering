@@ -94,10 +94,9 @@ extensions = [
   Extension(
     "leaf_ordering.tree.node",
     [
-      "leaf_ordering/tree/node.pyx",
-      "leaf_ordering/tree/matrix.cpp"
+      "leaf_ordering/tree/node.pyx"
     ],
-    language = "c++"
+    language = "c"
   ),
   Extension(
     "leaf_ordering.tree.validator",
