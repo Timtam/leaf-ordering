@@ -2,6 +2,7 @@
 # distutils: define_macros=CYTHON_TRACE_NOGIL=1
 
 from ..exceptions import TreeError
+from itertools import product
 
 cimport cython
 from cython.parallel cimport prange
@@ -279,13 +280,12 @@ cdef class Graph(Node):
   # the second heuristics (by Ziv Bar-Joseph et al.)
   cpdef sort_b(Graph self):
     cdef dict S = {}
-    if not self.right:
-      raise TreeError("no right tree")
-    if not self.left:
-      raise TreeError("no left tree")
-    self.sort_b_rec(self, S)
+    # first matrix calculation
+    self.sort_b_rec2(self, S)
+    # complete ordering
+    self.sort_b_rec1(self, S)
 
-  cdef double sort_b_rec(Graph self, Node v, dict S):
+  cdef double sort_b_rec2(Graph self, Node v, dict S):
     cdef double min, score
     cdef list L, R, LL, LR, RL, RR, TL, TR
     cdef Node l, r, u, w, m, k
@@ -315,8 +315,8 @@ cdef class Graph(Node):
       l = L[i]
       for j in xrange(len(R)):
         r = R[j]
-        S[v.left.id, l.leaf_id, r.leaf_id] = self.sort_b_rec(v.left, S)
-        S[v.right.id, l.leaf_id, r.leaf_id] = self.sort_b_rec(v.right, S)
+        S[v.left.id, l.leaf_id, r.leaf_id] = self.sort_b_rec2(v.left, S)
+        S[v.right.id, l.leaf_id, r.leaf_id] = self.sort_b_rec2(v.right, S)
         for I in xrange(len(L)):
           u = L[I]
           for J in xrange(len(R)):
@@ -343,3 +343,28 @@ cdef class Graph(Node):
                   min = score
             S[v.id, u.leaf_id, w.leaf_id] = S[v.id, w.leaf_id, u.leaf_id] = min
         return <double>S[v.id, l.leaf_id, r.leaf_id]
+
+  cdef void sort_b_rec1(Graph self, Node v, dict S):
+    cdef double min, tmp
+    cdef list L, R, RL, LR
+    cdef Node u, w
+    cdef object products, p
+    if not v.left.is_leaf() and not v.right.is_leaf():
+      L = v.left.get_children_at_level(self.height)
+      R = v.right.get_children_at_level(self.height)
+      RL = self.right.left.get_children_at_level(self.height)
+      LR = self.left.right.get_children_at_level(self.height)
+      products = product(L, R)
+      min = DBL_MAX
+      for p in products:
+        tmp = S[v.id, (<Node>p[0]).leaf_id, (<Node>p[1]).leaf_id]
+        if tmp < min:
+          min = tmp
+          u = p[0]
+          w = p[1]
+      if w in RL:
+        v.right.rotate()
+      if u in LR:
+        v.left.rotate()
+      self.sort_b_rec1(v.left, S)
+      self.sort_b_rec1(v.right, S)
