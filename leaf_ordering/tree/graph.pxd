@@ -4,13 +4,14 @@ from .node cimport Node
 
 cdef class Graph(Node):
   cdef readonly int height
-  cdef double *distances
+  cdef double[:] distances
   cdef int data_height
   cdef int data_width  
   cdef unsigned int id_offset
 
   cpdef build(Graph self, int[:, :] dataset)
-  cdef void insert_at(Graph self, int where, int *what)
+  cdef void build_from_cluster(Graph self, Node node, object cluster)
+  cdef inline Node create_node(Graph self, object cluster)
   cpdef clear(Graph self)
   cdef void build_distances_matrix(Graph self)
   cpdef sort_a(Graph self)
@@ -19,4 +20,4 @@ cdef class Graph(Node):
   cdef double sort_b_rec2(Graph self, Node v, dict S)
   cpdef get_data(Graph self)
   cpdef get_distance(Graph self)
-  cdef void build_cluster(Graph self)
+  cdef double[:, ::1] build_cluster(Graph self)

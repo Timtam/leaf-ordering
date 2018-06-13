@@ -3,6 +3,8 @@
 
 from ..exceptions import TreeError
 from itertools import product
+from scipy.cluster.hierarchy import linkage, to_tree
+from scipy.spatial.distance import pdist
 
 cimport cython
 from cython.parallel cimport prange
@@ -11,7 +13,6 @@ from libc.limits cimport INT_MAX
 from libc.math cimport ceil, log2, pow, sqrt
 from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy, memset
-from libcpp.queue cimport priority_queue
 
 from .node cimport Node
 from .matrix cimport GETI, GETJ, IDX, min_element, Distance
@@ -34,8 +35,10 @@ cdef class Graph(Node):
   @cython.nonecheck(False)
   @cython.wraparound(False)
   cpdef build(Graph self, int[:, :] dataset):
+    cdef double[:, ::1] cluster
     cdef int m, n
     cdef int i
+    cdef object root
     if self.height > 0:
       raise TreeError("tree already exists")
     m = dataset.shape[0]
@@ -43,60 +46,41 @@ cdef class Graph(Node):
     if m > INT_MAX:
       raise TreeError("unable to process more data entries than {0}".format(INT_MAX))
     self.height = <int>ceil(log2(<double>m))
-    if pow(2, self.height) > INT_MAX:
-      self.height = 0
-      raise TreeError("unable to process more data entries than {0}".format(INT_MAX))
     # copying the dataset
-    # and filling in additional data
-    # until we get a complete tree
-    self.data = <int*>malloc(<int>pow(2, self.height)*n*sizeof(int))
+    self.data = <int*>malloc(<int>m*n*sizeof(int))
     if self.data == NULL:
       self.height = 0
       raise MemoryError()
     for i in prange(m, nogil=True):
       memcpy(self.data + i * n, &(dataset[i, 0]), n*sizeof(int))
-    if pow(2, self.height) > m:
-      for i in prange(m, <int>pow(2, self.height), nogil=True):
-        memset(self.data + i * n, 0, n * sizeof(int))
-    m = <int>pow(2, self.height)
     self.data_height = m
     self.data_width = n
     # building the distances matrix (see below)
     self.build_distances_matrix()
     # clustering all leaves
-    self.build_cluster()
-    # rebuilding distances matrix
-    free(<void*>self.distances)
-    self.build_distances_matrix()
+    cluster = self.build_cluster()
     # inserting all leaves
-    for i in xrange(m):
-      self.insert_at(i, self.data + i * n)
+    root = to_tree(cluster)
+    self.build_from_cluster(self, root)
 
-  # inserts the given leaf at the given index
-  # index points towards the leaf at the given position
-  #   (binary representation)
-  # all nodes which don't yet exist, but need to be filled in
-  # will be created automatically
-  cdef void insert_at(Graph self, int where, int *what):
+  cdef void build_from_cluster(Graph self, Node node, object cluster):
+    cdef Node n
+    if cluster.left is not None:
+      n = self.create_node(cluster.left)
+      node.set_left(n)
+      self.build_from_cluster(node.left, cluster.left)
+    if cluster.right is not None:
+      n = self.create_node(cluster.right)
+      node.set_right(n)
+      self.build_from_cluster(node.right, cluster.right)
+      
+  cdef inline Node create_node(Graph self, object cluster):
     cdef int i
-    cdef int pos
-    cdef Node current = self
-    cdef Node next
-    for i in xrange(self.height - 1, -1, -1):
-      pos = (where>>i)&0x1
-      if pos == 0:
-        if current.left is None:
-          next = Node(self, self.id_offset)
-          current.set_left(next)
-          self.id_offset += 1
-        current = current.left
-      elif pos == 1:
-        if current.right is None:
-          next = Node(self, self.id_offset)
-          current.set_right(next)
-          self.id_offset += 1
-        current = current.right
-    current.set_data(what, where)
+    cdef Node n = Node(self, cluster.id)
+    if cluster.is_leaf():
+      i = cluster.id
+      n.set_data(self.data + i * self.data_width)
+    return n
 
   # cleans the graph from all children
   cpdef clear(Graph self):
@@ -105,9 +89,6 @@ cdef class Graph(Node):
     self.data_height = 0
     self.data_width = 0
     self.id_offset = 1
-    if self.distances != NULL:
-      free(<void*>self.distances)
-      self.distances = NULL
     if self.data != NULL:
       free(<void*>self.data)
       self.data = NULL
@@ -115,35 +96,16 @@ cdef class Graph(Node):
   # destructor
   # frees unneeded memory
   def __dealloc__(Graph self):
-    if self.distances != NULL:
-      free(<void*>self.distances)
     if self.data != NULL:
       free(<void*>self.data)
 
   # builds the distance matrix
   # the distance matrix is a triangular matrix, which contains
   # all possible distances between the leaves
-  @cython.boundscheck(False)
-  @cython.wraparound(False)
-  @cython.nonecheck(False)
   cdef void build_distances_matrix(Graph self):
     cdef int m = self.data_height
     cdef int n = self.data_width
-    self.distances = <double*>malloc((m+1)*m/2*sizeof(double))
-    cdef int i, j, k
-    cdef double d
-    if self.distances == NULL:
-      raise MemoryError()
-    # prange enables multithreading to improve performance drastically
-    for i in prange(m, nogil=True):
-      for j in xrange(i+1):
-        if i == j:
-          self.distances[IDX(i,j)] = -1.0
-        else:
-          d = 0
-          for k in xrange(n):
-            d = d + pow(self.data[j * n + k]-self.data[i * n +k], 2)
-          self.distances[IDX(i,j)] = sqrt(d)
+    self.distances = pdist(<int[:m, :n]>self.data, 'euclidean')
 
   # first heuristics implementation
   # we start ordering at level (graph.height - 1)
@@ -241,42 +203,9 @@ cdef class Graph(Node):
     return dist
 
   # clustering the tree
-  cdef void build_cluster(Graph self):
-    cdef priority_queue[Distance] q
-    cdef Distance d
-    cdef int m = self.data_height
-    cdef int n = self.data_width
-    cdef int i
-    cdef int row, col
-    cdef bint * clustered = <bint*>malloc(m*sizeof(bint))
-    cdef int *buf = <int*>malloc(n*m*sizeof(int))
-    cdef int offset = 0
-    cdef int[:, :] res
-    if clustered == NULL:
-      return
-    if buf == NULL:
-      free(<void*>clustered)
-      return
-    memset(<void*>clustered, False, m*sizeof(bint))
-    for i in xrange((m+1)*m/2):
-      if self.distances[i] >= 0:
-        d.distance = self.distances[i]
-        d.index = i
-        q.push(d)
-    while not q.empty():
-      d = q.top()
-      q.pop()
-      row = GETI(d.index)
-      col = GETJ(row,d.index)
-      if clustered[row] == True or clustered[col] == True:
-        continue
-      memcpy(buf+offset, self.data+n*row, n*sizeof(int))
-      offset += n
-      clustered[row] = True
-      memcpy(buf+offset, self.data+n*col, n*sizeof(int))
-      offset += n
-      clustered[col] = True
-
+  cdef double[:, ::1] build_cluster(Graph self):
+    return linkage(self.distances, method='single', metric='euclidean')
+    
   # the second heuristics (by Ziv Bar-Joseph et al.)
   cpdef sort_b(Graph self):
     cdef dict S = {}

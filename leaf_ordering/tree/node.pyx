@@ -45,9 +45,8 @@ cdef class Node:
       p = p.previous
     
   # sets the dataset for this node
-  cdef void set_data(Node self, int *data, int leaf_id):
+  cdef void set_data(Node self, int *data):
     self.data = data
-    self.leaf_id = leaf_id
 
   # returns the overall amount of this node's children
   cpdef unsigned int get_child_count(Node self):
@@ -138,3 +137,8 @@ cdef class Node:
       if not self.right is next_parent:
         self.rotate()
       next_parent.rotate_until_bottom_right_node(new_right)
+
+  def __repr__(Node self):
+    if self.is_leaf():
+      return "Leaf {0}".format(self.id)
+    return "Node {0}".format(self.id)
