@@ -17,7 +17,7 @@
   
   #define GETI(x) (floor(sqrt((double)(8*x + 1))-1)/2)
   #define GETJ(i,x) (x-(i*(i+1)/2)) //without i: (x-(pow((floor(sqrt(8*x + 1)-1)/2), 2)+(floor(sqrt(8*x + 1)-1)/2))/2))
-  #define IDX(i,j) ((int)fmax(i, j)*((int)fmax(i, j)+1)/2+(int)fmin(i, j))
+  #define IDX(i,j,n) (n*(int)fmin(i, j) - (int)fmin(i, j)*((int)fmin(i, j)+1)/2 + (int)fmax(i, j) - 1 - (int)fmin(i, j))
 
   struct Distance
   {

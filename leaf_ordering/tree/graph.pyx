@@ -3,7 +3,7 @@
 
 from ..exceptions import TreeError
 from itertools import product
-from scipy.cluster.hierarchy import linkage, to_tree
+from scipy.cluster.hierarchy import linkage, optimal_leaf_ordering, to_tree
 from scipy.spatial.distance import pdist
 
 cimport cython
@@ -116,6 +116,7 @@ cdef class Graph(Node):
   # node around will probably increase the previous distance even more than we reduce it
   # when one level finished, we decrease the level and start again
   # ends at level 0 (root)
+  """
   cpdef sort_a(Graph self):
     cdef double[4] dist;
     cdef double* min_dist
@@ -162,6 +163,7 @@ cdef class Graph(Node):
         leaf_a = node_a.get_bottom_right_node()
         leaf_b = node_b.get_bottom_right_node()
         dist_diff = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)] - min_dist[0]
+  """
 
   # copies all datasets within the leaves together and returns them
   @cython.boundscheck(False)
@@ -170,28 +172,24 @@ cdef class Graph(Node):
   cpdef get_data(Graph self):
     cdef int i
     cdef int offset
-    cdef list nodes = self.get_children_at_level(self.height)
+    cdef list leaves = self.get_leaves()
     cdef int m = self.data_height
     cdef int n = self.data_width
-    cdef Node node
+    cdef Node leaf
     cdef int *data = <int*>malloc(m*n*sizeof(int))
-    cdef int[:] blk
-    cdef int[:] datablk
     if data == NULL:
       raise MemoryError()
     for i in xrange(m):
-      node = nodes[i]
+      leaf = leaves[i]
       offset = i*n
-      blk = <int[:n]>(data+offset)
-      datablk = <int[:n]>(node.data)
-      blk[...] = datablk
+      memcpy(data + offset, leaf.data, n*sizeof(int))
     cdef int[:, ::1] mem = (<int[:m, :n]>data).copy()
     free(<void*>data)
     return mem
 
   # calculates the distances of all pairs of leaves
   cpdef get_distance(Graph self):
-    cdef list nodes = self.get_children_at_level(self.height)
+    cdef list nodes = self.get_leaves()
     cdef double dist = 0
     cdef int i
     cdef int n = self.data_height
@@ -199,7 +197,7 @@ cdef class Graph(Node):
     for i in xrange(1, n - 2, 2):
       node_a = nodes[i]
       node_b = nodes[i+1]
-      dist += self.distances[IDX(node_a.leaf_id, node_b.leaf_id)]
+      dist += self.distances[IDX(node_a.id, node_b.id, n)]
     return dist
 
   # clustering the tree
@@ -214,6 +212,7 @@ cdef class Graph(Node):
     # complete ordering
     self.sort_b_rec1(self, S)
 
+  """
   cdef double sort_b_rec2(Graph self, Node v, dict S):
     cdef double min, score
     cdef list L, R, LL, LR, RL, RR, TL, TR
@@ -272,6 +271,7 @@ cdef class Graph(Node):
                   min = score
             S[v.id, u.leaf_id, w.leaf_id] = S[v.id, w.leaf_id, u.leaf_id] = min
         return <double>S[v.id, l.leaf_id, r.leaf_id]
+  """
 
   cdef void sort_b_rec1(Graph self, Node v, dict S):
     cdef double min, tmp
@@ -297,3 +297,10 @@ cdef class Graph(Node):
         v.left.rotate()
       self.sort_b_rec1(v.left, S)
       self.sort_b_rec1(v.right, S)
+
+  # no heuristics, just for reference
+  cpdef sort_scipy(Graph self):
+    cdef double[:, ::1] cluster = linkage(self.distances, method='single', metric='euclidean')
+    cdef double[:, ::1] ordered = optimal_leaf_ordering(cluster, self.distances)
+    self.detach_children()
+    self.build_from_cluster(self, to_tree(ordered))

@@ -142,3 +142,7 @@ cdef class Node:
     if self.is_leaf():
       return "Leaf {0}".format(self.id)
     return "Node {0}".format(self.id)
+
+  cpdef list get_leaves(Node self):
+    cdef list children = self.get_children()
+    return [c for c in children if c.is_leaf()]
