@@ -1,8 +1,8 @@
 \documentclass[a4paper, 10pt, twoside, onecolumn, parskip]{scrartcl}
 %\KOMAoptions{DIV=last}
 \usepackage[left=4cm,right=2cm,top=2cm,bottom=4cm]{geometry}
-\usepackage[ngerman]{babel}	% deutsche Einstellungen
-\usepackage[utf8]{inputenc}	% Eingabekodierung für Umlaute im Quellcode
+\usepackage[ngerman]{babel}    % deutsche Einstellungen
+\usepackage[utf8]{inputenc}    % Eingabekodierung für Umlaute im Quellcode
 \usepackage[T1]{fontenc}
 \usepackage[hyphens]{url}
 \usepackage[breaklinks=true, hidelinks]{hyperref}
@@ -16,10 +16,10 @@
 
 \title{Übung 4 Algorithm Engineering} % Titel
 \author{{Toni Barth} und {Max Haarbach}} % Autor
-\date{\today}			% \today wird durch das aktuelle Datum ersetzt
+\date{\today}            % \today wird durch das aktuelle Datum ersetzt
 
 \begin{document}
-    \maketitle				% hier wird der Titel dann gedruckt
+    \maketitle                % hier wird der Titel dann gedruckt
 
     \section{Ziele} \label{sec:ziele}
 
@@ -59,5 +59,105 @@
             \item Farb- bzw. Grau-Übergänge
         \end{itemize}
     \end{itemize}
+
+    \section{Gemessene Laufzeiten} \label{sec:laufzeiten}
+    An dieser Stelle werden die Laufzeiten der Heuristiken für die jeweiligen Testinstanzen dokumentiert.
+    Die Einheiten der Messungen sind jeweils Sekunden (s).
+
+    \subsection{Gradienten} \label{subsec:gradienten}
+
+    \begin{center}
+        \begin{tabular}{|r|r|r|r|r|}
+            \hline
+            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+            2500 & 0.055 & 0.054 & 0.054 & 0.0543 \\ \hline
+            5000 & 0.108 & 0.110 & 0.107 & 0.1083 \\ \hline
+        \end{tabular}
+        \captionof{table}{Testinstanz g1 - Heuristik 1}
+    \end{center}
+
+    \begin{center}
+        \begin{tabular}{|r|r|r|r|r|}
+            \hline
+            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+            2500 & 0.053 & 0.053 & 0.053 & 0.053 \\ \hline
+            5000 & 0.106 & 0.107 & 0.108 & 0.107 \\ \hline
+        \end{tabular}
+        \captionof{table}{Testinstanz g2 - Heuristik 1}
+    \end{center}
+
+    \subsection{Fotos} \label{subsec:fotos}
+
+    \begin{center}
+        \begin{tabular}{|r|r|r|r|r|}
+            \hline
+            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+            2500 & 0.055 & 0.053 & 0.053 & 0.0537 \\ \hline
+            5000 & 0.106 & 0.109 & 0.107 & 0.1073 \\ \hline
+        \end{tabular}
+        \captionof{table}{Testinstanz p1 - Heuristik 1}
+    \end{center}
+
+    \begin{center}
+        \begin{tabular}{|r|r|r|r|r|}
+            \hline
+            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+            2500 & 0.054 & 0.053 & 0.055 & 0.054 \\ \hline
+            5000 & 0.107 & 0.107 & 0.108 & 0.1077 \\ \hline
+        \end{tabular}
+        \captionof{table}{Testinstanz p2 - Heuristik 1}
+    \end{center}
+
+    \subsection{Testbilder} \label{subsec:testbilder}
+
+    \begin{center}
+        \begin{tabular}{|r|r|r|r|r|}
+            \hline
+            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+            2500 & 0.057 & 0.055 & 0.054 & 0.0553 \\ \hline
+            5000 & 0.110 & 0.108 & 0.107 & 0.1083 \\ \hline
+        \end{tabular}
+        \captionof{table}{Testinstanz t1 - Heuristik 1}
+    \end{center}
+
+    \begin{center}
+        \begin{tabular}{|r|r|r|r|r|}
+            \hline
+            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+            500 & 0.007 & 0.007 & 0.008 & 0.0073 \\ \hline
+            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+            2500 & 0.053 & 0.053 & 0.054 & 0.053 \\ \hline
+            5000 & 0.106 & 0.110 & 0.107 & 0.1077 \\ \hline
+        \end{tabular}
+        \captionof{table}{Testinstanz t2 - Heuristik 1}
+    \end{center}
 
 \end{document}
