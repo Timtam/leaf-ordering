@@ -1,4 +1,5 @@
 # cython: profile=True
+# cython: profile=True
 # distutils: define_macros=CYTHON_TRACE_NOGIL=1
 
 from ..exceptions import TreeError
@@ -27,7 +28,6 @@ cdef class Graph(Node):
     self.height = 0
     self.data_width = 0
     self.data_height = 0
-    self.id_offset = 1
   
   # builds the binary tree
   # receives the leaf data as parameter
@@ -61,6 +61,7 @@ cdef class Graph(Node):
     cluster = self.build_cluster()
     # inserting all leaves
     root = to_tree(cluster)
+    self.id = root.id
     self.build_from_cluster(self, root)
 
   cdef void build_from_cluster(Graph self, Node node, object cluster):
@@ -88,7 +89,6 @@ cdef class Graph(Node):
     self.height = 0
     self.data_height = 0
     self.data_width = 0
-    self.id_offset = 1
     if self.data != NULL:
       free(<void*>self.data)
       self.data = NULL
@@ -212,43 +212,45 @@ cdef class Graph(Node):
     # complete ordering
     self.sort_b_rec1(self, S)
 
-  """
   cdef double sort_b_rec2(Graph self, Node v, dict S):
-    cdef double min, score
+    cdef double min, score, o_min
     cdef list L, R, LL, LR, RL, RR, TL, TR
-    cdef Node l, r, u, w, m, k
+    cdef Node l, r, u, w, m, k, l_min, r_min
     cdef unsigned int i, j, I, J, ii, jj
     if v.is_leaf():
-      S[v.id, v.leaf_id, v.leaf_id] = 0
+      S[v.id, v.id, v.id] = 0
       return 0
-    L = v.left.get_children_at_level(self.height)
-    R = v.right.get_children_at_level(self.height)
+    L = v.left.get_leaves()
+    R = v.right.get_leaves()
     if not v.left.left is None:
-      LL = v.left.left.get_children_at_level(self.height)
+      LL = v.left.left.get_leaves()
     else:
-      LL = v.left.get_children_at_level(self.height)
+      LL = v.left.get_leaves()
     if not v.left.right is None:
-      LR = v.left.right.get_children_at_level(self.height)
+      LR = v.left.right.get_leaves()
     else:
-      LR = v.left.get_children_at_level(self.height)
+      LR = v.left.get_leaves()
     if not v.right.left is None:
-      RL = v.right.left.get_children_at_level(self.height)
+      RL = v.right.left.get_leaves()
     else:
-      RL = v.right.get_children_at_level(self.height)
-    if not v.left.left is None:
-      RR = v.right.right.get_children_at_level(self.height)
+      RL = v.right.get_leaves()
+    if not v.right.right is None:
+      RR = v.right.right.get_leaves()
     else:
-      RR = v.right.get_children_at_level(self.height)
+      RR = v.right.get_leaves()
+    o_min = DBL_MAX
     for i in xrange(len(L)):
       l = L[i]
       for j in xrange(len(R)):
         r = R[j]
-        S[v.left.id, l.leaf_id, r.leaf_id] = self.sort_b_rec2(v.left, S)
-        S[v.right.id, l.leaf_id, r.leaf_id] = self.sort_b_rec2(v.right, S)
+        S[v.left.id, l.id, r.id] = self.sort_b_rec2(v.left, S)
+        S[v.right.id, l.id, r.id] = self.sort_b_rec2(v.right, S)
         for I in xrange(len(L)):
           u = L[I]
           for J in xrange(len(R)):
             w = R[J]
+            if (v.id, u.id, w.id, ) in S and (v.id, w.id, u.id, ) in S:
+              continue
             min = DBL_MAX
             if u in LR:
               TL = LL
@@ -263,15 +265,18 @@ cdef class Graph(Node):
               for jj in xrange(len(TR)):
                 k = TR[jj]
                 if u == m:
-                  S[v.left.id, u.leaf_id, m.leaf_id] = 0
+                  S[v.left.id, u.id, m.id] = 0
                 if w == k:
-                  S[v.right.id, w.leaf_id, k.leaf_id] = 0
-                score = S[v.left.id, u.leaf_id, m.leaf_id] + S[v.right.id, w.leaf_id, k.leaf_id] + self.distances[IDX(m.leaf_id, k.leaf_id)]
+                  S[v.right.id, w.id, k.id] = 0
+                score = S[v.left.id, u.id, m.id] + S[v.right.id, w.id, k.id] + self.distances[IDX(m.id, k.id, self.data_width)]
                 if score < min:
                   min = score
-            S[v.id, u.leaf_id, w.leaf_id] = S[v.id, w.leaf_id, u.leaf_id] = min
-        return <double>S[v.id, l.leaf_id, r.leaf_id]
-  """
+                  if min < o_min:
+                    o_min = min
+                    l_min = l
+                    r_min = r
+            S[v.id, u.id, w.id] = S[v.id, w.id, u.id] = min
+    return <double>S[v.id, l_min.id, r_min.id]
 
   cdef void sort_b_rec1(Graph self, Node v, dict S):
     cdef double min, tmp
@@ -279,14 +284,14 @@ cdef class Graph(Node):
     cdef Node u, w
     cdef object products, p
     if not v.left.is_leaf() and not v.right.is_leaf():
-      L = v.left.get_children_at_level(self.height)
-      R = v.right.get_children_at_level(self.height)
-      RL = self.right.left.get_children_at_level(self.height)
-      LR = self.left.right.get_children_at_level(self.height)
+      L = v.left.get_leaves()
+      R = v.right.get_leaves()
+      RL = self.right.left.get_leaves()
+      LR = self.left.right.get_leaves()
       products = product(L, R)
       min = DBL_MAX
       for p in products:
-        tmp = S[v.id, (<Node>p[0]).leaf_id, (<Node>p[1]).leaf_id]
+        tmp = S[v.id, (<Node>p[0]).id, (<Node>p[1]).id]
         if tmp < min:
           min = tmp
           u = p[0]
