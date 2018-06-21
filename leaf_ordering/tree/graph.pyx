@@ -249,8 +249,6 @@ cdef class Graph(Node):
           u = L[I]
           for J in xrange(len(R)):
             w = R[J]
-            if (v.id, u.id, w.id, ) in S and (v.id, w.id, u.id, ) in S:
-              continue
             min = DBL_MAX
             if u in LR:
               TL = LL
@@ -283,23 +281,20 @@ cdef class Graph(Node):
     cdef list L, R, RL, LR
     cdef Node u, w
     cdef object products, p
-    if not v.left.is_leaf() and not v.right.is_leaf():
-      L = v.left.get_leaves()
-      R = v.right.get_leaves()
-      RL = self.right.left.get_leaves()
-      LR = self.left.right.get_leaves()
-      products = product(L, R)
-      min = DBL_MAX
-      for p in products:
-        tmp = S[v.id, (<Node>p[0]).id, (<Node>p[1]).id]
-        if tmp < min:
-          min = tmp
-          u = p[0]
-          w = p[1]
-      if w in RL:
-        v.right.rotate()
-      if u in LR:
-        v.left.rotate()
+    if v.is_leaf():
+      return
+    L = v.left.get_leaves()
+    R = v.right.get_leaves()
+    products = product(L, R)
+    min = DBL_MAX
+    for p in products:
+      tmp = S[v.id, (<Node>p[0]).id, (<Node>p[1]).id]
+      if tmp < min:
+        min = tmp
+        u = p[0]
+        w = p[1]
+      v.rotate_until_bottom_left_node(u)
+      v.rotate_until_bottom_right_node(w)
       self.sort_b_rec1(v.left, S)
       self.sort_b_rec1(v.right, S)
 

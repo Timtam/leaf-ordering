@@ -145,4 +145,6 @@ cdef class Node:
 
   cpdef list get_leaves(Node self):
     cdef list children = self.get_children()
+    if self.is_leaf():
+      return [self]
     return [c for c in children if c.is_leaf()]
