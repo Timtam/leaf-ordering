@@ -86,10 +86,9 @@ extensions = [
   Extension(
     "leaf_ordering.tree.graph",
     [
-      "leaf_ordering/tree/graph.pyx",
-      "leaf_ordering/tree/matrix.cpp"
+      "leaf_ordering/tree/graph.pyx"
     ],
-    language="c++"
+    language="c"
   ),
   Extension(
     "leaf_ordering.tree.node",

@@ -16,7 +16,7 @@ from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy, memset
 
 from .node cimport Node
-from .matrix cimport GETI, GETJ, IDX, min_element, Distance
+from .matrix cimport GETI, GETJ, IDX
 
 # graph class
 # is basically just a derived node, but with additional methods
@@ -106,64 +106,6 @@ cdef class Graph(Node):
     cdef int m = self.data_height
     cdef int n = self.data_width
     self.distances = pdist(<int[:m, :n]>self.data, 'euclidean')
-
-  # first heuristics implementation
-  # we start ordering at level (graph.height - 1)
-  # we take all nodes and compare them
-  # we then check all 4 possible distances (see below)
-  # and rotate the nodes to get the best possible distance
-  # we therefore remember the previous distance and check, if turning the first
-  # node around will probably increase the previous distance even more than we reduce it
-  # when one level finished, we decrease the level and start again
-  # ends at level 0 (root)
-  """
-  cpdef sort_a(Graph self):
-    cdef double[4] dist;
-    cdef double* min_dist
-    cdef double dist_diff = .0
-    cdef int i, j
-    cdef list nodes
-    cdef Node leaf_a, leaf_b
-    cdef Node node_a, node_b
-    # we got four different distances:
-    # a: both leaves are initial
-    # b: leave 1 and 2 are rotated
-    # c: leaves 1 and 2 and 3 and 4 are rotated
-    # d: leaves 1 and 2 are initial, 3 and 4 are rotated
-    for i in xrange(self.height - 1, -1, -1):
-      nodes = self.get_children_at_level(i)
-      for j in xrange(len(nodes) - 1):
-        node_a = nodes[j]
-        node_b = nodes[j+1]
-        #   calculating all distances
-        # a
-        leaf_a = node_a.get_bottom_right_node()
-        leaf_b = node_b.get_bottom_left_node()
-        dist[0] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
-        # b
-        leaf_a = node_a.get_bottom_left_node()
-        dist[1] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
-        if j > 0:
-          dist[1] += dist_diff
-        # c
-        leaf_b = node_b.get_bottom_right_node()
-        dist[2] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
-        if j > 0:
-          dist[2] += dist_diff
-        # d
-        leaf_a = node_a.get_bottom_right_node()
-        dist[3] = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)]
-        # comparing and rotating
-        min_dist = min_element(dist, dist + 4)
-        if min_dist - dist == 1 or min_dist - dist == 2:
-          node_a.rotate()
-        if min_dist - dist == 2 or min_dist - dist == 3:
-          node_b.rotate()
-        # calculating distance difference
-        leaf_a = node_a.get_bottom_right_node()
-        leaf_b = node_b.get_bottom_right_node()
-        dist_diff = self.distances[IDX(leaf_a.leaf_id, leaf_b.leaf_id)] - min_dist[0]
-  """
 
   # copies all datasets within the leaves together and returns them
   @cython.boundscheck(False)

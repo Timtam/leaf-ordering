@@ -19,15 +19,4 @@
   #define GETJ(i,x) (x-(i*(i+1)/2)) //without i: (x-(pow((floor(sqrt(8*x + 1)-1)/2), 2)+(floor(sqrt(8*x + 1)-1)/2))/2))
   #define IDX(i,j,n) (n*(int)fmin(i, j) - (int)fmin(i, j)*((int)fmin(i, j)+1)/2 + (int)fmax(i, j) - 1 - (int)fmin(i, j))
 
-  struct Distance
-  {
-    double distance;
-    int index;
-    bool operator<(const Distance& rhs) const
-    {
-      return !(distance < rhs.distance);
-    }
-  };
-
-  double* min_element(double *start, double *end);
 #endif
