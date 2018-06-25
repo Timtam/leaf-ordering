@@ -1,3 +1,6 @@
+class NotAvailableError(Exception):
+  pass
+
 class PGMEOF(Exception):
   pass
   
