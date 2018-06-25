@@ -295,10 +295,10 @@ cdef class Graph(Node):
         min = tmp
         u = p[0]
         w = p[1]
-      v.rotate_until_bottom_left_node(u)
-      v.rotate_until_bottom_right_node(w)
-      self.sort_b_rec1(v.left, S)
-      self.sort_b_rec1(v.right, S)
+    v.rotate_until_bottom_left_node(u)
+    v.rotate_until_bottom_right_node(w)
+    self.sort_b_rec1(v.left, S)
+    self.sort_b_rec1(v.right, S)
 
   # no heuristics, just for reference
   cpdef sort_scipy(Graph self):
