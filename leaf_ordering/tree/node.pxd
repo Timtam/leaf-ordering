@@ -20,7 +20,6 @@ cdef class Node:
   cdef void rotate(Node self)
   cdef void detach_children(Node self)
   cdef void set_root(Node self, Node root)
-  cpdef list get_children_at_level(Node self, int level)
   cdef Node get_bottom_left_node(Node self)
   cdef Node get_bottom_right_node(Node self)
   cpdef list get_children(Node self)

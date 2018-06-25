@@ -76,17 +76,6 @@ cdef class Node:
   cdef void set_root(Node self, Node root):
     self.root = root
 
-  # return all children at a specified depth level
-  cpdef list get_children_at_level(Node self, int level):
-    cdef list nodes = []
-    if self.level == level:
-      return [self]
-    if self.level > level or self.is_leaf():
-      return []
-    nodes += self.left.get_children_at_level(level)
-    nodes += self.right.get_children_at_level(level)
-    return nodes
-
   # get the bottom-left-most child (leaf) from this node
   cdef Node get_bottom_left_node(Node self):
     if self.is_leaf():
