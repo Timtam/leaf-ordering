@@ -213,7 +213,7 @@ cdef class Graph(Node):
     self.sort_b_rec1(self, S)
 
   cdef double sort_b_rec2(Graph self, Node v, dict S):
-    cdef double min, score, o_min
+    cdef double min, score, o_min, left_score, right_score
     cdef list L, R, LL, LR, RL, RR, TL, TR
     cdef Node l, r, u, w, m, k, l_min, r_min
     cdef unsigned int i, j, I, J, ii, jj
@@ -239,12 +239,14 @@ cdef class Graph(Node):
     else:
       RR = v.right.get_leaves()
     o_min = DBL_MAX
+    left_score = self.sort_b_rec2(v.left, S)
+    right_score = self.sort_b_rec2(v.right, S)
     for i in xrange(len(L)):
       l = L[i]
       for j in xrange(len(R)):
         r = R[j]
-        S[v.left.id, l.id, r.id] = self.sort_b_rec2(v.left, S)
-        S[v.right.id, l.id, r.id] = self.sort_b_rec2(v.right, S)
+        S[v.left.id, l.id, r.id] = left_score
+        S[v.right.id, l.id, r.id] = right_score
         for I in xrange(len(L)):
           u = L[I]
           for J in xrange(len(R)):
