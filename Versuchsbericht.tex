@@ -10,16 +10,34 @@
 \usepackage{amsmath}
 \usepackage{enumitem}
 \usepackage[autostyle=true,german=quotes]{csquotes}
+\usepackage[backend=biber, style=alphabetic, block=ragged, backref]{biblatex}
+\addbibresource{references.bib}
 
 \setlist{itemsep=.5em, parsep=.0em}
 \hyphenchar\font=\string"7F
 
-\title{Übung 4 Algorithm Engineering} % Titel
+\title{Übung Algorithm Engineering} % Titel
 \author{{Toni Barth} und {Max Haarbach}} % Autor
 \date{\today}            % \today wird durch das aktuelle Datum ersetzt
 
 \begin{document}
     \maketitle                % hier wird der Titel dann gedruckt
+
+    \section{Heuristiken} \label{sec:heuristiken}
+
+    \subsection{Heuristik 1: Zufallsdrehungen}
+
+    Die erste Heuristik führt eine bestimmte Anzahl an Drehungen, die von der Größe der Instanz abhängt, an zufällig ausgewählte Knoten aus.
+    Dieser Vorgang wird wiederum je nach Größe der Instanz mehrfach durchgeführt und am Ende die Sortierung mit dem geringsten Abstand als Ergebnis ausgegeben.
+
+    \subsection{Heuristik 2: Optimal Leaf Ordering nach \cite{bar2001fast}}
+
+    Die zweite Heuristik nutzt das Verfahren, das Bar-Joseph und weitere für eine möglichst schnelle und optimale Sortierung von hierarchisch geclusterten Datensätzen entwickelt haben.
+    Dabei wird folgender rekursiver Ansatz verfolgt:
+    Sollen Kosten für einen bestimmten Knoten berechnet werden, setzen sich diese aus den Kosten der beiden Kindknoten und dem Abstand der beiden inneren Blätter dieser beiden Teilbäume.
+    Sofern der Knoten, für denen Kosten berechnet werden sollen, ein Blatt bzw. einen Datensatz darstellt, betragen dessen Kosten $0$.
+    Dies ist daher das Rekursionsende.
+    Begonnen wird üblicherweise mit dem Wurzelknoten, da man dadurch am Ende auch die gesamten Abstandskosten berechnet hat.
 
     \section{Ziele} \label{sec:ziele}
 
@@ -34,7 +52,7 @@
 
     Beim \enquote{Leaf-ordering} sind lediglich 2 Faktoren von Bedeutung:
 
-    Zum Einen bestimmen die Größe der Bilder, die im Endeffekt die Anzahl der Testobjekte widerspiegeln, die Laufzeiten der Heuristiken.
+    Zum Einen bestimmt die Größe der Bilder, die im Endeffekt die Anzahl der Testobjekte widerspiegelt, die Laufzeit der Heuristiken.
     Zum Anderen spielt auch deren Struktur oder Art eine Rolle, die sich allerdings schwer in konkrete Messgrößen oder Werte fassen lassen.
 
     \section{Testinstanzen} \label{sec:testinstanzen}
@@ -66,98 +84,100 @@
 
     \subsection{Gradienten} \label{subsec:gradienten}
 
-    \begin{center}
-        \begin{tabular}{|r|r|r|r|r|}
-            \hline
-            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
-            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
-            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
-            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
-            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
-            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
-            2500 & 0.055 & 0.054 & 0.054 & 0.0543 \\ \hline
-            5000 & 0.108 & 0.110 & 0.107 & 0.1083 \\ \hline
-        \end{tabular}
-        \captionof{table}{Testinstanz g1 - Heuristik 1}
-    \end{center}
-
-    \begin{center}
-        \begin{tabular}{|r|r|r|r|r|}
-            \hline
-            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
-            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
-            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
-            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
-            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
-            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
-            2500 & 0.053 & 0.053 & 0.053 & 0.053 \\ \hline
-            5000 & 0.106 & 0.107 & 0.108 & 0.107 \\ \hline
-        \end{tabular}
-        \captionof{table}{Testinstanz g2 - Heuristik 1}
-    \end{center}
+    %\begin{center}
+    %    \begin{tabular}{|r|r|r|r|r|}
+    %        \hline
+    %        Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+    %        10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+    %        50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+    %        100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+    %        500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+    %        1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+    %        2500 & 0.055 & 0.054 & 0.054 & 0.0543 \\ \hline
+    %        5000 & 0.108 & 0.110 & 0.107 & 0.1083 \\ \hline
+    %    \end{tabular}
+    %    \captionof{table}{Testinstanz g1 - Heuristik 1}
+    %\end{center}
+    %
+    %\begin{center}
+    %    \begin{tabular}{|r|r|r|r|r|}
+    %        \hline
+    %        Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+    %        10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+    %        50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+    %        100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+    %        500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+    %        1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+    %        2500 & 0.053 & 0.053 & 0.053 & 0.053 \\ \hline
+    %        5000 & 0.106 & 0.107 & 0.108 & 0.107 \\ \hline
+    %    \end{tabular}
+    %    \captionof{table}{Testinstanz g2 - Heuristik 1}
+    %\end{center}
 
     \subsection{Fotos} \label{subsec:fotos}
 
-    \begin{center}
-        \begin{tabular}{|r|r|r|r|r|}
-            \hline
-            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
-            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
-            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
-            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
-            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
-            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
-            2500 & 0.055 & 0.053 & 0.053 & 0.0537 \\ \hline
-            5000 & 0.106 & 0.109 & 0.107 & 0.1073 \\ \hline
-        \end{tabular}
-        \captionof{table}{Testinstanz p1 - Heuristik 1}
-    \end{center}
-
-    \begin{center}
-        \begin{tabular}{|r|r|r|r|r|}
-            \hline
-            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
-            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
-            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
-            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
-            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
-            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
-            2500 & 0.054 & 0.053 & 0.055 & 0.054 \\ \hline
-            5000 & 0.107 & 0.107 & 0.108 & 0.1077 \\ \hline
-        \end{tabular}
-        \captionof{table}{Testinstanz p2 - Heuristik 1}
-    \end{center}
+    %\begin{center}
+    %    \begin{tabular}{|r|r|r|r|r|}
+    %        \hline
+    %        Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+    %        10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+    %        50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+    %        100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+    %        500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+    %        1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+    %        2500 & 0.055 & 0.053 & 0.053 & 0.0537 \\ \hline
+    %        5000 & 0.106 & 0.109 & 0.107 & 0.1073 \\ \hline
+    %    \end{tabular}
+    %    \captionof{table}{Testinstanz p1 - Heuristik 1}
+    %\end{center}
+    %
+    %\begin{center}
+    %    \begin{tabular}{|r|r|r|r|r|}
+    %        \hline
+    %        Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+    %        10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+    %        50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+    %        100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+    %        500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+    %        1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+    %        2500 & 0.054 & 0.053 & 0.055 & 0.054 \\ \hline
+    %        5000 & 0.107 & 0.107 & 0.108 & 0.1077 \\ \hline
+    %    \end{tabular}
+    %    \captionof{table}{Testinstanz p2 - Heuristik 1}
+    %\end{center}
 
     \subsection{Testbilder} \label{subsec:testbilder}
 
-    \begin{center}
-        \begin{tabular}{|r|r|r|r|r|}
-            \hline
-            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
-            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
-            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
-            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
-            500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
-            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
-            2500 & 0.057 & 0.055 & 0.054 & 0.0553 \\ \hline
-            5000 & 0.110 & 0.108 & 0.107 & 0.1083 \\ \hline
-        \end{tabular}
-        \captionof{table}{Testinstanz t1 - Heuristik 1}
-    \end{center}
+    %\begin{center}
+    %    \begin{tabular}{|r|r|r|r|r|}
+    %        \hline
+    %        Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+    %        10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+    %        50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+    %        100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+    %        500 & 0.007 & 0.007 & 0.007 & 0.007 \\ \hline
+    %        1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+    %        2500 & 0.057 & 0.055 & 0.054 & 0.0553 \\ \hline
+    %        5000 & 0.110 & 0.108 & 0.107 & 0.1083 \\ \hline
+    %    \end{tabular}
+    %    \captionof{table}{Testinstanz t1 - Heuristik 1}
+    %\end{center}
+    %
+    %\begin{center}
+    %    \begin{tabular}{|r|r|r|r|r|}
+    %        \hline
+    %        Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
+    %        10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
+    %        50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
+    %        100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
+    %        500 & 0.007 & 0.007 & 0.008 & 0.0073 \\ \hline
+    %        1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
+    %        2500 & 0.053 & 0.053 & 0.054 & 0.053 \\ \hline
+    %        5000 & 0.106 & 0.110 & 0.107 & 0.1077 \\ \hline
+    %    \end{tabular}
+    %    \captionof{table}{Testinstanz t2 - Heuristik 1}
+    %\end{center}
 
-    \begin{center}
-        \begin{tabular}{|r|r|r|r|r|}
-            \hline
-            Größe & Messung 1 & Messung 2 & Messung 3 & ø \\ \hline
-            10 & 0.000 & 0.000 & 0.000 & 0.000 \\ \hline
-            50 & 0.001 & 0.001 & 0.001 & 0.001 \\ \hline
-            100 & 0.002 & 0.002 & 0.002 & 0.002 \\ \hline
-            500 & 0.007 & 0.007 & 0.008 & 0.0073 \\ \hline
-            1000 & 0.014 & 0.014 & 0.014 & 0.014 \\ \hline
-            2500 & 0.053 & 0.053 & 0.054 & 0.053 \\ \hline
-            5000 & 0.106 & 0.110 & 0.107 & 0.1077 \\ \hline
-        \end{tabular}
-        \captionof{table}{Testinstanz t2 - Heuristik 1}
-    \end{center}
+    \printbibliography
 
 \end{document}
