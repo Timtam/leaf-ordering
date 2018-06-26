@@ -161,19 +161,31 @@ cdef class Graph(Node):
     
   # the second heuristics (by Ziv Bar-Joseph et al.)
   cpdef sort_b(Graph self):
-    cdef dict S = {}
+    cdef double[:, :, :] d
+    cdef list nodes = self.get_nodes()
+    cdef list leaves = self.get_leaves()
+    cdef int leaf_count = len(leaves)
+    cdef int node_count = len(nodes)
+    cdef double *S = <double*>malloc((leaf_count + node_count)*leaf_count*leaf_count*sizeof(double))
+    if S == NULL:
+      raise MemoryError()
+    memset(S, 0, (leaf_count + node_count)*leaf_count*leaf_count*sizeof(double))
+    d = <double[:(leaf_count+node_count), :leaf_count, :leaf_count]>S
     # first matrix calculation
-    self.sort_b_rec2(self, S)
+    self.sort_b_rec2(self, d)
     # complete ordering
-    self.sort_b_rec1(self, S)
+    self.sort_b_rec1(self, d)
+    free(<void*>S)
 
-  cdef double sort_b_rec2(Graph self, Node v, dict S):
+  @cython.boundscheck(False)
+  @cython.boundscheck(False)
+  @cython.wraparound(False)
+  cdef double sort_b_rec2(Graph self, Node v, double[:, :, :] S):
     cdef double min, score, o_min, left_score, right_score
     cdef list L, R, LL, LR, RL, RR, TL, TR
     cdef Node l, r, u, w, m, k, l_min, r_min
     cdef unsigned int i, j, I, J, ii, jj
     if v.is_leaf():
-      S[v.id, v.id, v.id] = 0
       return 0
     L = v.left.get_leaves()
     R = v.right.get_leaves()
@@ -219,10 +231,6 @@ cdef class Graph(Node):
               m = TL[ii]
               for jj in xrange(len(TR)):
                 k = TR[jj]
-                if u == m:
-                  S[v.left.id, u.id, m.id] = 0
-                if w == k:
-                  S[v.right.id, w.id, k.id] = 0
                 score = S[v.left.id, u.id, m.id] + S[v.right.id, w.id, k.id] + self.distances[IDX(m.id, k.id, self.data_width)]
                 if score < min:
                   min = score
@@ -231,9 +239,12 @@ cdef class Graph(Node):
                     l_min = l
                     r_min = r
             S[v.id, u.id, w.id] = S[v.id, w.id, u.id] = min
-    return <double>S[v.id, l_min.id, r_min.id]
+    return S[v.id, l_min.id, r_min.id]
 
-  cdef void sort_b_rec1(Graph self, Node v, dict S):
+  @cython.boundscheck(False)
+  @cython.wraparound(False)
+  @cython.nonecheck(False)
+  cdef void sort_b_rec1(Graph self, Node v, double[:, :, :] S):
     cdef double min, tmp
     cdef list L, R, RL, LR
     cdef Node u, w
@@ -266,6 +277,9 @@ cdef class Graph(Node):
     self.detach_children()
     self.build_from_cluster(self, to_tree(ordered))
 
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.wraparound(False)
   cpdef sort_a(Graph self):
     cdef int *current_rotations
     cdef int *min_rotations
