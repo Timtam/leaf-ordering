@@ -2,11 +2,18 @@
 # cython: profile=True
 # distutils: define_macros=CYTHON_TRACE_NOGIL=1
 
-from ..exceptions import TreeError
+from ..exceptions import NotAvailableError, TreeError
 from itertools import product
 import random
-from scipy.cluster.hierarchy import linkage, optimal_leaf_ordering, to_tree
+from scipy.cluster.hierarchy import linkage, to_tree
 from scipy.spatial.distance import pdist
+
+try:
+  from scipy.cluster.hierarchy import optimal_leaf_ordering
+except ImportError:
+  SCIPY_ORDERING = False
+else:
+  SCIPY_ORDERING = True
 
 cimport cython
 from cython.parallel cimport prange
@@ -250,8 +257,12 @@ cdef class Graph(Node):
 
   # no heuristics, just for reference
   cpdef sort_scipy(Graph self):
-    cdef double[:, ::1] cluster = linkage(self.distances, method='single', metric='euclidean')
-    cdef double[:, ::1] ordered = optimal_leaf_ordering(cluster, self.distances)
+    cdef double[:, ::1] cluster
+    cdef double[:, ::1] ordered
+    if SCIPY_ORDERING == False:
+      raise NotAvailableError("scipy doesn't yet support optimal leaf ordering. update to the latest scipy version to enable this functionality.")
+    cluster = linkage(self.distances, method='single', metric='euclidean')
+    ordered = optimal_leaf_ordering(cluster, self.distances)
     self.detach_children()
     self.build_from_cluster(self, to_tree(ordered))
 
