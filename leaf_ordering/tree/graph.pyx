@@ -4,6 +4,7 @@
 
 from ..exceptions import TreeError
 from itertools import product
+import random
 from scipy.cluster.hierarchy import linkage, optimal_leaf_ordering, to_tree
 from scipy.spatial.distance import pdist
 
@@ -17,6 +18,11 @@ from libc.string cimport memcpy, memset
 
 from .node cimport Node
 from .matrix cimport GETI, GETJ, IDX
+
+# compile-time constants
+# the amount of attempts in finding the best result for sort_a (as factor to the node count)
+DEF SORT_A_ATTEMPTS = 5
+
 
 # graph class
 # is basically just a derived node, but with additional methods
@@ -248,3 +254,43 @@ cdef class Graph(Node):
     cdef double[:, ::1] ordered = optimal_leaf_ordering(cluster, self.distances)
     self.detach_children()
     self.build_from_cluster(self, to_tree(ordered))
+
+  cpdef sort_a(Graph self):
+    cdef int *current_rotations
+    cdef int *min_rotations
+    cdef unsigned int rotation_count
+    cdef list nodes = self.get_nodes()
+    cdef Node n
+    cdef int node_count = len(nodes)
+    cdef double distance
+    cdef double min_distance = DBL_MAX
+    cdef unsigned int i, j, r
+    # we need to calculate the amount of rotations we want to utilize
+    rotation_count = <unsigned int>ceil(node_count * 0.67)
+    min_rotations = <int*>malloc(rotation_count * sizeof(int))
+    if min_rotations == NULL:
+      raise MemoryError()
+    current_rotations = <int*>malloc(rotation_count * sizeof(int))
+    if current_rotations == NULL:
+      free(<void*>min_rotations)
+      raise MemoryError()
+    for i in xrange(node_count * SORT_A_ATTEMPTS):
+      for j in xrange(rotation_count):
+        r = random.randint(self.id - node_count, self.id)
+        n = self.get_child(r)
+        n.rotate()
+        current_rotations[j] = r
+      distance = self.get_distance()
+      if distance < min_distance:
+        memcpy(min_rotations, current_rotations, rotation_count * sizeof(int))
+        min_distance = distance
+      # reverting the changes
+      for j in xrange(rotation_count):
+        n = self.get_child(current_rotations[j])
+        n.rotate()
+    # we now know the best attempt, we rotate until we reach it
+    for i in xrange(rotation_count):
+      n = self.get_child(min_rotations[i])
+      n.rotate()
+    free(<void*>min_rotations)
+    free(<void*>current_rotations)

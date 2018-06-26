@@ -14,6 +14,7 @@ cdef class Graph(Node):
   cpdef clear(Graph self)
   cdef void build_distances_matrix(Graph self)
   cpdef sort_scipy(Graph self)
+  cpdef sort_a(Graph self)
   cpdef sort_b(Graph self)
   cdef void sort_b_rec1(Graph self, Node v, dict S)
   cdef double sort_b_rec2(Graph self, Node v, dict S)

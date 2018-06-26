@@ -137,3 +137,15 @@ cdef class Node:
     if self.is_leaf():
       return [self]
     return [c for c in children if c.is_leaf()]
+
+  cpdef list get_nodes(Node self):
+    if self.is_leaf():
+      return []
+    return self.left.get_nodes() + self.right.get_nodes() + [self]
+
+  cpdef Node get_child(Node self, int id):
+    if self.id == id:
+      return self
+    if self.is_leaf():
+      return None
+    return self.left.get_child(id) or self.right.get_child(id)

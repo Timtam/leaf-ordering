@@ -27,3 +27,6 @@ cdef class Node:
   cpdef Node get_parent_at_level(Node self, int level)
   cdef void rotate_until_bottom_left_node(Node self, Node new_left)
   cdef void rotate_until_bottom_right_node(Node self, Node new_right)
+  cpdef list get_nodes(Node self)
+  cpdef Node get_child(Node self, int id)
+  
