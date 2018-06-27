@@ -160,6 +160,7 @@ cdef class Graph(Node):
     return linkage(self.distances, method='single', metric='euclidean')
     
   # the second heuristics (by Ziv Bar-Joseph et al.)
+  # see sort_b_rec1 and sort_b_rec2 comments for details
   cpdef sort_b(Graph self):
     cdef double[:, :, :] d
     cdef list nodes = self.get_nodes()
@@ -177,6 +178,7 @@ cdef class Graph(Node):
     self.sort_b_rec1(self, d)
     free(<void*>S)
 
+  # calculates a distance matrix, containing several distances between nodes and leaves
   @cython.boundscheck(False)
   @cython.boundscheck(False)
   @cython.wraparound(False)
@@ -241,6 +243,10 @@ cdef class Graph(Node):
             S[v.id, u.id, w.id] = S[v.id, w.id, u.id] = min
     return S[v.id, l_min.id, r_min.id]
 
+  # second heuristics ordering method
+  # checks all left/right leaves from a given node
+  # and rotates the leaves with the lowest available distance leftmost/rightmost
+  # continues with the subtrees, until the whole tree was ordered
   @cython.boundscheck(False)
   @cython.wraparound(False)
   @cython.nonecheck(False)
@@ -277,6 +283,11 @@ cdef class Graph(Node):
     self.detach_children()
     self.build_from_cluster(self, to_tree(ordered))
 
+  # first heuristics
+  # retrieves all nodes within the tree
+  # randomly rotates them and stores the resulting distance
+  # repeats this several times and takes the ordering with
+  # the best distance at the end and returns this order
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.wraparound(False)
