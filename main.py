@@ -37,11 +37,22 @@ def main(path):
   # reading and processing the data
   dataset = reader.read()
 
+  # building the unshuffled dataset and printing the distance
+  graph.build(dataset)
+  
+  print("Overall distance before shuffling: {0}".format(graph.get_distance()))
+
+  graph.clear()
+
   # we shuffle the dataset randomly
   dataset = random_shuffle_dataset(dataset)
 
   # build the graph from the dataset
   graph.build(dataset)
+
+  # writing shuffled picture
+  writer = PGMWriter(reader.maximum_gray)
+  writer.write("test_shuffled.pgm".encode('utf-8'), dataset)
 
   # printing the overall distance before sorting
   print("Overall distance before ordering with first heuristic: {0}".format(graph.get_distance()))
