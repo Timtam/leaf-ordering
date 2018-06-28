@@ -18,11 +18,11 @@ cdef class Node:
     self.set_root(root)
 
   # checks if this node is a leaf
-  cpdef bint is_leaf(Node self):
+  cdef inline bint _is_leaf(Node self):
     return self.left is None and self.right is None
 
   # checks if this node is the root node
-  cpdef bint is_root(Node self):
+  cdef inline bint _is_root(Node self):
     return self.previous is None
 
   # those three methods set the left child, the right child and the parent
@@ -78,19 +78,19 @@ cdef class Node:
 
   # get the bottom-left-most child (leaf) from this node
   cdef Node get_bottom_left_node(Node self):
-    if self.is_leaf():
+    if self._is_leaf():
       return self
     return self.left.get_bottom_left_node()
 
   # get the bottom-right-most child (leaf) from this node
   cdef Node get_bottom_right_node(Node self):
-    if self.is_leaf():
+    if self._is_leaf():
       return self
     return self.right.get_bottom_left_node()
 
   cpdef list get_children(Node self):
     cdef list l = []
-    if self.is_leaf():
+    if self._is_leaf():
       return []
     l.append(self.left)
     l += self.left.get_children()
@@ -128,24 +128,24 @@ cdef class Node:
       next_parent.rotate_until_bottom_right_node(new_right)
 
   def __repr__(Node self):
-    if self.is_leaf():
+    if self._is_leaf():
       return "Leaf {0}".format(self.id)
     return "Node {0}".format(self.id)
 
   cpdef list get_leaves(Node self):
     cdef list children = self.get_children()
-    if self.is_leaf():
+    if self._is_leaf():
       return [self]
-    return [c for c in children if c.is_leaf()]
+    return [c for c in children if (<Node>c)._is_leaf()]
 
   cpdef list get_nodes(Node self):
-    if self.is_leaf():
+    if self._is_leaf():
       return []
     return self.left.get_nodes() + self.right.get_nodes() + [self]
 
   cpdef Node get_child(Node self, int id):
     if self.id == id:
       return self
-    if self.is_leaf():
+    if self._is_leaf():
       return None
     return self.left.get_child(id) or self.right.get_child(id)

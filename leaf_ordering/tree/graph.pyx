@@ -187,7 +187,7 @@ cdef class Graph(Node):
     cdef list L, R, LL, LR, RL, RR, TL, TR
     cdef Node l, r, u, w, m, k, l_min, r_min
     cdef unsigned int i, j, I, J, ii, jj
-    if v.is_leaf():
+    if v._is_leaf():
       return 0
     L = v.left.get_leaves()
     R = v.right.get_leaves()
@@ -233,7 +233,7 @@ cdef class Graph(Node):
               m = TL[ii]
               for jj in xrange(len(TR)):
                 k = TR[jj]
-                score = S[v.left.id, u.id, m.id] + S[v.right.id, w.id, k.id] + self.distances[IDX(m.id, k.id, self.data_width)]
+                score = S[v.left.id, u.id, m.id] + S[v.right.id, w.id, k.id] + self.distances[IDX(m.id, k.id, self.data_height)]
                 if score < min:
                   min = score
                   if min < o_min:
@@ -252,13 +252,18 @@ cdef class Graph(Node):
   @cython.nonecheck(False)
   cdef void sort_b_rec1(Graph self, Node v, double[:, :, :] S):
     cdef double min, tmp
-    cdef list L, R, RL, LR
+    cdef list L, R
     cdef Node u, w
     cdef object products, p
-    if v.is_leaf():
+    if v._is_leaf():
       return
     L = v.left.get_leaves()
     R = v.right.get_leaves()
+    if not v._is_root():
+      if v.previous.left is v:
+        L = [L[0]]
+      elif v.previous.right is v:
+        R = [R[len(R)-1]]
     products = product(L, R)
     min = DBL_MAX
     for p in products:

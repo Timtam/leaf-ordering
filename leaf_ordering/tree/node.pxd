@@ -10,8 +10,8 @@ cdef class Node:
   cdef readonly int level
   cdef unsigned int id
 
-  cpdef bint is_leaf(Node self)
-  cpdef bint is_root(Node self)
+  cdef inline bint _is_leaf(Node self)
+  cdef inline bint _is_root(Node self)
   cdef void set_left(Node self, Node l)
   cdef void set_right(Node self, Node r)
   cdef void set_previous(Node self, Node p)
@@ -29,4 +29,3 @@ cdef class Node:
   cdef void rotate_until_bottom_right_node(Node self, Node new_right)
   cpdef list get_nodes(Node self)
   cpdef Node get_child(Node self, int id)
-  
