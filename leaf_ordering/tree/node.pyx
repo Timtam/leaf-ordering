@@ -25,6 +25,12 @@ cdef class Node:
   cdef inline bint _is_root(Node self):
     return self.previous is None
 
+  def is_leaf(Node self):
+    return self._is_leaf()
+    
+  def is_root(Node self):
+    return self._is_root()
+
   # those three methods set the left child, the right child and the parent
   cdef void set_left(Node self, Node l):
     self.left = l
