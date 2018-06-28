@@ -142,14 +142,14 @@ cdef class Graph(Node):
     free(<void*>data)
     return mem
 
-  # calculates the distances of all pairs of leaves
+  # calculates the distances of all leaves
   cpdef get_distance(Graph self):
     cdef list nodes = self.get_leaves()
     cdef double dist = 0
     cdef int i
     cdef int n = self.data_height
     cdef Node node_a, node_b
-    for i in xrange(1, n - 2, 2):
+    for i in xrange(n - 1):
       node_a = nodes[i]
       node_b = nodes[i+1]
       dist += self.distances[IDX(node_a.id, node_b.id, n)]
