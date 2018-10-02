@@ -23,6 +23,7 @@
 
 \setlist{itemsep=.5em, parsep=.0em}
 %\hyphenchar\font=\string"7F
+\raggedbottom
 
 \title{Übung Algorithm Engineering} % Titel
 \author{{Toni Barth} und {Max Haarbach}} % Autor
@@ -94,8 +95,11 @@
     Die Messwerte der originale Testinstanzen werden später eingefügt, da die Implementierung dazu noch fehlt.
     Für die gemischten und sortierten Instanzen sind die Werte im~\autoref{sec:app_qualität} zu finden.
 
-    Aufgelistet werden erstmal nur Werte für die Instanzen der Größen 10, 50 und 100, da ab 500 die Laufzeit der zweiten Heuristik stark zunimmt.
+    Aufgelistet werden erst einmal nur Werte für die Instanzen der Größen 10, 50 und 100, da ab 500 die Laufzeit der zweiten Heuristik stark zunimmt.
     Es wurden insgesamt 3 Durchläufe durchgeführt, in denen jeweils eine Testinstanz mit bestimmter Art Größe durch die beiden Heuristiken sortiert wurde.
+    
+    Dabei fällt auf, dass die Werte der zweiten Heuristik nicht in allen Fällen gleich sind, wobei der Algorithmus aber immer die beste Lösung finden sollte.
+    Dessen Ursache kann zum Beispiel in Fehlern der Implementation liegen.
 
     %\subsection{Abstandssummen der Original-Instanzen} \label{subsec:sum_original}
     %
@@ -127,64 +131,80 @@
     
     Als Vergleich der beiden Heuristiken wird ein Wilcoxon Signed-Rank Test auf Basis der Durchschnittswerte der Ergebnis-Qualitäten und Laufzeiten der beiden Heuristiken über alle Größen und Arten durchgeführt. Daraus resultieren 18 Datenpunkte pro Heuristik für den Test.
     
-    % Hier muss noch Text hin bzgl. Auswertung Wilcoxon-Test
+    Anhand der Tabelle der kritischen Werte für den Wilcoxon-Test (\cite{wilcoxon_table}) kann ein für diese Stichprobengröße und einem Signifikanzniveau von $\alpha{} = 0,05$ ein kritischer Wert von $40$ abgelesen werden.
+    Liegt der aus dem Test ermittelte Wert darunter, befindet er sich im kritischen Bereich und die Nullhypothese, dass die Messwerte ähnlich verteilt sind, kann abgelehnt werden.
     
-    \begin{center}
-        \begin{tabular}{|r|l|S[table-format=5.7]|S[table-format=5.7]|S[table-format=4.9]|c|S[table-format=3]|S[table-format=3]|}
-            \hline
-            Größe & Art & {Heuristik 1} & {Heuristik 2} & {Differenz} & Vorz. & \multicolumn{2}{|c|}{Rang} \\
-             & & & & & & {pos.} & {neg.} \\\hline
-             10 & g1 & 566,6235268 & 426,75209   & 139,8714368 & + & 7   & \\
-             10 & g2 & 308,6377425 & 249,8738006 & 58,76394195 & + & 5   & \\
-             10 & p1 & 545,985978  & 522,4447331 & 23,54124498 & + & 4   & \\
-             10 & p2 & 396,6925964 & 373,4007865 & 23,29180987 & + & 3   & \\
-             10 & t1 & 198,4223745 & 192,9098592 & 5,512515253 & + & 1   & \\
-             10 & t2 & 848,9135363 & 838,2630473 & 10,65048897 & + & 2   & \\\hline
-             50 & g1 & 2725,438841 & 1295,841883 & 1429,596958 & + & 15  & \\
-             50 & g2 & 1475,971813 & 604,6365335 & 871,3352796 & + & 12  & \\
-             50 & p1 & 6908,250429 & 6587,512858 & 320,7375704 & + & 8   & \\\
-             50 & p2 & 6026,672219 & 5492,529012 & 534,1432074 & + & 9   & \\\
-             50 & t1 & 2935,220663 & 2798,969456 & 136,2512073 & + & 6   & \\\
-             50 & t2 & 10971,5055  & 10183,3819  & 788,1236028 & + & 11  & \\\hline
-            100 & g1 & 4677,81622  & 1902,730879 & 2775,085342 & + & 18  & \\
-            100 & g2 & 2286,828587 & 1072,16236  & 1214,666226 & + & 14  & \\
-            100 & p1 & 19980,72542 & 18371,62428 & 1609,101134 & + & 16  & \\
-            100 & p2 & 16975,622   & 14399,11553 & 2576,506477 & + & 17  & \\
-            100 & t1 & 10733,01992 & 9955,006258 & 778,0136641 & + & 10  & \\
-            100 & t2 & 19988,81125 & 18823,77994 & 1165,031308 & + & 13  & \\\hline
-            $\sum{}$ & &           &             &             &   & 171 & 0 \\\hline
-        \end{tabular}
-        \captionof{table}{Wilcoxon Signed-Rank Test für Ergebnis-Qualität}
-    \end{center}
+    Aus Tabelle 1 ist erkennbar, dass ausschließlich positive Ränge vorhanden sind, was auf die zweite Heuristik mit dem Algorithmus der besten Lösung zurückzuführen ist.
+    Daraus resultiert die kleinere Summe der negativen Ränge mit $0$ und liegt damit unter dem kritischen Wert.
     
-    \begin{center}
-        \begin{tabular}{|r|l|S[table-format=1.4]|S[table-format=2.4]|S[table-format=2.4]|c|S[table-format=2.1]|S[table-format=3]|}
-            \hline
-            Größe & Art & {Heuristik 1} & {Heuristik 2} & {Differenz} & Vorz. & \multicolumn{2}{|c|}{Rang} \\
-             & & & & & & {pos.} & {neg.} \\\hline
-             10 & g1 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
-             10 & g2 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
-             10 & p1 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
-             10 & p2 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
-             10 & t1 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
-             10 & t2 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\\hline
-             50 & g1 & 0,0427 & 0,3283  & 0,2856  & + &     & 10 \\
-             50 & g2 & 0,042  & 0,6557  & 0,6137  & + &     & 12 \\
-             50 & p1 & 0,043  & 0,137   & 0,094   & + &     & 8  \\\
-             50 & p2 & 0,043  & 0,126   & 0,083   & + &     & 7  \\\
-             50 & t1 & 0,0423 & 0,381   & 0,3387  & + &     & 11 \\\
-             50 & t2 & 0,043  & 0,1667  & 0,1237  & + &     & 9  \\\hline
-            100 & g1 & 0,1757 & 11,404  & 11,2283 & + &     & 15 \\
-            100 & g2 & 0,1747 & 14,6813 & 14,5066 & + &     & 17 \\
-            100 & p1 & 0,1793 & 5,3723  & 5,193   & + &     & 13 \\
-            100 & p2 & 0,176  & 22,9617 & 22,7857 & + &     & 18 \\
-            100 & t1 & 0,1753 & 7,7143  & 7,539   & + &     & 14 \\
-            100 & t2 & 0,1767 & 12,1773 & 12,0006 & + &     & 16 \\\hline
-            $\sum{}$ & &      &         &         &   & 21  & 150 \\\hline
-        \end{tabular}
-        \captionof{table}{Wilcoxon Signed-Rank Test für Laufzeiten}
-    \end{center}
+    \begin{figure}[H]
+        \begin{center}
+            \begin{tabular}{|r|l|S[table-format=5.7]|S[table-format=5.7]|S[table-format=4.9]|c|S[table-format=3]|S[table-format=3]|}
+                \hline
+                Größe & Art & {Heuristik 1} & {Heuristik 2} & {Differenz} & Vorz. &     \multicolumn{2}{|c|}{Rang} \\
+                 & & & & & & {pos.} & {neg.} \\\hline
+                 10 & g1 & 566,6235268 & 426,75209   & 139,8714368 & + & 7   & \\
+                 10 & g2 & 308,6377425 & 249,8738006 & 58,76394195 & + & 5   & \\
+                 10 & p1 & 545,985978  & 522,4447331 & 23,54124498 & + & 4   & \\
+                 10 & p2 & 396,6925964 & 373,4007865 & 23,29180987 & + & 3   & \\
+                 10 & t1 & 198,4223745 & 192,9098592 & 5,512515253 & + & 1   & \\
+                 10 & t2 & 848,9135363 & 838,2630473 & 10,65048897 & + & 2   & \\\hline
+                 50 & g1 & 2725,438841 & 1295,841883 & 1429,596958 & + & 15  & \\
+                 50 & g2 & 1475,971813 & 604,6365335 & 871,3352796 & + & 12  & \\
+                 50 & p1 & 6908,250429 & 6587,512858 & 320,7375704 & + & 8   & \\\
+                 50 & p2 & 6026,672219 & 5492,529012 & 534,1432074 & + & 9   & \\\
+                 50 & t1 & 2935,220663 & 2798,969456 & 136,2512073 & + & 6   & \\\
+                 50 & t2 & 10971,5055  & 10183,3819  & 788,1236028 & + & 11  & \\\hline
+                100 & g1 & 4677,81622  & 1902,730879 & 2775,085342 & + & 18  & \\
+                100 & g2 & 2286,828587 & 1072,16236  & 1214,666226 & + & 14  & \\
+                100 & p1 & 19980,72542 & 18371,62428 & 1609,101134 & + & 16  & \\
+                100 & p2 & 16975,622   & 14399,11553 & 2576,506477 & + & 17  & \\
+                100 & t1 & 10733,01992 & 9955,006258 & 778,0136641 & + & 10  & \\
+                100 & t2 & 19988,81125 & 18823,77994 & 1165,031308 & + & 13  & \\\hline
+                $\sum{}$ & &           &             &             &   & 171 & 0 \\\hline
+            \end{tabular}
+            \captionof{table}{Wilcoxon Signed-Rank Test für Ergebnis-Qualität}
+        \end{center}
+    \end{figure}
+    
+    Auch bei den Laufzeiten zeigt sich nach Tabelle 2 die kleinere Summe der positiven Ränge mit $21$.
+    Dadurch liegt auch diese unter dem kritischen Wert.
+    
+    \begin{figure}[H]
+        \begin{center}
+            \begin{tabular}{|r|l|S[table-format=1.4]|S[table-format=2.4]|S[table-format=2.4]|c|S[table-format=2.1]|S[table-format=3]|}
+                \hline
+                Größe & Art & {Heuristik 1} & {Heuristik 2} & {Differenz} & Vorz. &     \multicolumn{2}{|c|}{Rang} \\
+                 & & & & & & {pos.} & {neg.} \\\hline
+                 10 & g1 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
+                 10 & g2 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
+                 10 & p1 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
+                 10 & p2 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
+                 10 & t1 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\
+                 10 & t2 & 0,002  & 0,001   & 0,001   & - & 3,5 & \\\hline
+                 50 & g1 & 0,0427 & 0,3283  & 0,2856  & + &     & 10 \\
+                 50 & g2 & 0,042  & 0,6557  & 0,6137  & + &     & 12 \\
+                 50 & p1 & 0,043  & 0,137   & 0,094   & + &     & 8  \\\
+                 50 & p2 & 0,043  & 0,126   & 0,083   & + &     & 7  \\\
+                 50 & t1 & 0,0423 & 0,381   & 0,3387  & + &     & 11 \\\
+                 50 & t2 & 0,043  & 0,1667  & 0,1237  & + &     & 9  \\\hline
+                100 & g1 & 0,1757 & 11,404  & 11,2283 & + &     & 15 \\
+                100 & g2 & 0,1747 & 14,6813 & 14,5066 & + &     & 17 \\
+                100 & p1 & 0,1793 & 5,3723  & 5,193   & + &     & 13 \\
+                100 & p2 & 0,176  & 22,9617 & 22,7857 & + &     & 18 \\
+                100 & t1 & 0,1753 & 7,7143  & 7,539   & + &     & 14 \\
+                100 & t2 & 0,1767 & 12,1773 & 12,0006 & + &     & 16 \\\hline
+                $\sum{}$ & &      &         &         &   & 21  & 150 \\\hline
+            \end{tabular}
+            \label{t:wilcoxon_runtimes}
+            \captionof{table}{Wilcoxon Signed-Rank Test für Laufzeiten}
+        \end{center}
+    \end{figure}
 
+    Somit agieren die beiden Heuristiken sowohl hinsichtlich der Qualität als auch der Laufzeit sehr unterschiedlich, zumindest in den Größenordnungen von 10 bis 100 Elementen der zu sortierenden Daten.
+    
+    Des Weiteren ist aus den Werten des Wilcoxon-Test aber auch die eindeutige Tendenz zu einer besseren Laufzeit der ersten Heuristik ($21$ im Vergleich zu $150$) sowie zu einem besseren Ergebnis der zweiten Heuristik ($0$ im Vergleich zu $171$) erkennbar.
+    
     \newpage
     \appendix
     \input{ergebnis-qualitaet.tex}
