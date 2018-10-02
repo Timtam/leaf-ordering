@@ -1,0 +1,149 @@
+\section{Ergebnis-Qualität} \label{sec:app_qualität}
+
+\subsection{Abstandssummen der gemischten Bilder} \label{subsec:app_sumShuffle}
+
+%\begin{figure}[H]
+%    \begin{minipage}{.45\textwidth}
+\begin{center}
+    \begin{tabular}{|r|S[table-format=3.9]|S[table-format=3.9]|S[table-format=3.9]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} \\\hline
+        g1 & 834,302888687 & 763,215338135 & 915,014689799 \\\hline
+        g2 & 523,503612176 & 523,503612176 & 573,212169601 \\\hline
+        p1 & 715,996547763 & 715,996547763 & 713,029264826 \\\hline
+        p2 & 428,438632521 & 388,942148901 & 406,337541942 \\\hline
+        t1 & 248,472480733 & 263,107387688 & 250,725344778 \\\hline
+        t2 & 974,582228968 & 885,182192758 & 950,296186762 \\\hline
+    \end{tabular}
+    \captionof{table}{Abstandssummen der gemischten Instanzen der Größe 10}
+\end{center}
+%    \end{minipage}\hfill%
+%    \begin{minipage}{.45\textwidth}
+\begin{center}
+    \begin{tabular}{|r|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.8]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} \\\hline
+        g1 & 3386,10358879 & 2756,28773204 & 3230,96412561 \\\hline
+        g2 & 2168,00156018 & 2255,88720735 & 2185,99466697 \\\hline
+        p1 & 7753,696801   & 7839,42728232 & 7740,21345487 \\\hline
+        p2 & 6352,0804647  & 6476,84613688 & 6320,38864576 \\\hline
+        t1 & 3458,82782244 & 3465,62528179 & 3457,03636612 \\\hline
+        t2 & 12478,3784309 & 12235,0266878 & 12234,7514628 \\\hline
+    \end{tabular}
+    \captionof{table}{Abstandssummen der gemischten Instanzen der Größe 50}
+\end{center}
+%    \end{minipage}
+%\end{figure}
+
+%\begin{figure}[H]
+%    \begin{minipage}{.45\textwidth}
+\begin{center}
+    \begin{tabular}{|r|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.8]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} \\\hline
+        g1 & 6540,14581498 & 5656,20209467 & 6638,07923591 \\\hline
+        g2 & 3054,30639553 & 3074,15843039 & 3139,57575107 \\\hline
+        p1 & 20765,541476  & 20933,9591893 & 20762,0657001 \\\hline
+        p2 & 18215,8892259 & 17769,2556008 & 18113,899511  \\\hline
+        t1 & 12254,7534816 & 12363,7166301 & 12333,0075423 \\\hline
+        t2 & 20995,3984479 & 21076,5563615 & 20986,0028343 \\\hline
+    \end{tabular}
+    \captionof{table}{Abstandssummen der gemischten Instanzen der Größe 100}
+\end{center}
+%    \end{minipage}\hfill%
+%    \begin{minipage}{.45\textwidth}
+
+%    \end{minipage}
+%\end{figure}
+
+\newpage
+
+\subsection{Abstandsummen der sortierten Bilder} \label{subsec:app_sumSort}
+
+\subsubsection{Heuristik 1} \label{subsubsec:app_heuristik1_qualität}
+
+\begin{center}
+    \begin{tabular}{|r|S[table-format=3.9]|S[table-format=3.9]|S[table-format=3.9]|S[table-format=3.10]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} & ø \\\hline
+        g1 & 511,890729981 & 593,989925231 & 593,989925231 & 566,6235268143 \\\hline
+        g2 & 378,273825497 & 249,873800568 & 297,765601491 & 308,6377425187 \\\hline
+        p1 & 579,379823257 & 522,444733052 & 536,133377774 & 545,9859780277 \\\hline
+        p2 & 391,556113931 & 401,822571285 & 396,699104033 & 396,6925964163 \\\hline
+        t1 & 207,463887593 & 192,909859229 & 194,893376625 & 198,4223744823 \\\hline
+        t2 & 838,263047345 & 869,673011642 & 838,80454995  & 848,9135363123 \\\hline
+    \end{tabular}
+    \captionof{table}{Heuristik 1: Abstandssummen der sortierten Instanzen der Größe 10}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{|r|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.9]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} & ø \\\hline
+        g1 & 2736,97257701 & 2551,29814308 & 2888,04580254 & 2725,438840877  \\\hline
+        g2 & 1596,42449569 & 1486,68581038 & 1344,80513322 & 1475,971813097  \\\hline
+        p1 & 6963,39812615 & 6820,63085512 & 6940,72230471 & 6908,25042866   \\\hline
+        p2 & 6060,36325688 & 5988,33180827 & 6031,321592   & 6026,67221905   \\\hline
+        t1 & 2834,37185044 & 3058,84209343 & 2912,4480459  & 2935,220663257  \\\hline
+        t2 & 10838,6803098 & 10993,4434053 & 11082,3927782 & 10971,50549777  \\\hline
+    \end{tabular}
+    \captionof{table}{Heuristik 1: Abstandssummen der sortierten Instanzen der Größe 50}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{|r|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.8]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} & ø \\\hline
+        g1 & 4835,82352844 & 4756,40532119 & 4441,21981118 & 4677,81622027  \\\hline
+        g2 & 2214,59876015 & 2293,71637533 & 2352,17062442 & 2286,82858663  \\\hline
+        p1 & 20010,8195814 & 19889,8369096 & 20041,5197608 & 19980,72541727 \\\hline
+        p2 & 17071,5189857 & 16979,5694001 & 16875,7776209 & 16975,62200223 \\\hline
+        t1 & 10585,1207027 & 10728,5233067 & 10885,4157573 & 10733,01992223 \\\hline
+        t2 & 20173,4030102 & 20210,8315004 & 19582,1992343 & 19988,8112483  \\\hline
+    \end{tabular}
+    \captionof{table}{Heuristik 1: Abstandssummen der sortierten Instanzen der Größe 100}
+\end{center}
+
+\subsubsection{Heuristik 2} \label{subsubsec:app_heuristik2_qualität}
+
+\begin{center}
+    \begin{tabular}{|r|S[table-format=3.9]|S[table-format=3.9]|S[table-format=3.9]|S[table-format=3.9]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} & ø \\\hline
+        g1 & 426,752089999 & 426,752089999 & 426,752089999 & 426,752089999 \\\hline
+        g2 & 249,873800568 & 249,873800568 & 249,873800568 & 249,873800568 \\\hline
+        p1 & 522,444733052 & 522,444733052 & 522,444733052 & 522,444733052 \\\hline
+        p2 & 373,400786545 & 373,400786545 & 373,400786545 & 373,400786545 \\\hline
+        t1 & 192,909859229 & 192,909859229 & 192,909859229 & 192,909859229 \\\hline
+        t2 & 838,263047345 & 838,263047345 & 838,263047345 & 838,263047345 \\\hline
+    \end{tabular}
+    \captionof{table}{Heuristik 2: Abstandssummen der sortierten Instanzen der Größe 10}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{|r|S[table-format=5.9]|S[table-format=5.9]|S[table-format=5.9]|S[table-format=5.9]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} & ø \\\hline
+        g1 & 1715,86645274 & 1085,82959774 & 1085,82959774 & 1295,84188274 \\\hline
+        g2 & 604,636533543 & 604,636533543 & 604,636533543 & 604,636533543 \\\hline
+        p1 & 6587,51285829 & 6587,51285829 & 6587,51285829 & 6587,51285829 \\\hline
+        p2 & 5492,5290117  & 5492,5290117  & 5492,5290117  & 5492,5290117  \\\hline
+        t1 & 2798,7771451  & 2799,35407759 & 2798,7771451  & 2798,96945593 \\\hline
+        t2 & 10183,381895  & 10183,381895  & 10183,381895  & 10183,381895  \\\hline
+    \end{tabular}
+    \captionof{table}{Heuristik 2: Abstandssummen der sortierten Instanzen der Größe 50}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{|r|S[table-format=5.9]|S[table-format=5.8]|S[table-format=5.8]|S[table-format=5.10]|}
+        \hline
+        \backslashbox{Art}{Messlauf} & {\#1} & {\#2} & {\#3} & ø \\\hline
+        g1 & 1892,391478   & 1923,40968002 & 1892,391478   & 1902,730878673  \\\hline
+        g2 & 990,337428662 & 1089,07985883 & 1137,06979326 & 1072,1623602507 \\\hline
+        p1 & 18371,6242832 & 18371,6242832 & 18371,6242832 & 18371,6242832   \\\hline
+        p2 & 14399,1155256 & 14399,1155256 & 14399,1155256 & 14399,1155256   \\\hline
+        t1 & 9955,00625808 & 9955,00625808 & 9955,00625808 & 9955,00625808   \\\hline
+        t2 & 18823,7799399 & 18823,7799399 & 18823,7799399 & 18823,7799399   \\\hline
+    \end{tabular}
+    \captionof{table}{Heuristik 2: Abstandssummen der sortierten Instanzen der Größe 100}
+\end{center}
