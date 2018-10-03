@@ -68,7 +68,7 @@
     \section{Testinstanzen} \label{sec:testinstanzen}
 
     Gemäß der~\nameref{sec:faktoren} werden auch die Testinstanzen, die durch Grauwert-Bilder realisiert sind, in die entsprechenden Kategorien unterteilt:
-    
+
     \begin{itemize}
         \item Größen:
         \begin{itemize}
@@ -88,16 +88,18 @@
         \end{itemize}
     \end{itemize}
 
-    \section{Ergebnis-Qualität} \label{sec:qualität}
+    \section{Testergebnisse}
+
+    Es wurden erst einmal nur Tests für die Instanzen der Größen 10, 50 und 100 durchgeführt, da ab einer Größe von 500 die Laufzeit der zweiten Heuristik stark zunimmt.
+    Dabei wurden insgesamt 3 Durchläufe durchgeführt, in denen jeweils eine Testinstanz mit bestimmter Art und Größe durch die beiden Heuristiken sortiert wurde.
+    Diese Tests wurden auf dem Linux-Server "Anubis" der MLU ausgeführt.
+
+    \subsection{Ergebnis-Qualität} \label{sec:qualität}
 
     Als Maß für die Qualität der Ergebnisse wird die Summe der Abstände aller benachbarten Blattpaare genutzt, sodass bei 10 Blättern 9 Abstände zu addieren sind.
     Die Abstände wiederum werden durch den euklidischen Abstand der entsprechenden Spaltenvektoren berechnet.
-    Die Messwerte der originale Testinstanzen werden später eingefügt, da die Implementierung dazu noch fehlt.
-    Für die gemischten und sortierten Instanzen sind die Werte im~\autoref{sec:app_qualität} zu finden.
+    Für die gemischten und sortierten Instanzen sind die Werte im~\autoref{sec:app_qualität} zu finden, wobei von letzteren am Ende der Durchschnitt gebildet wird.
 
-    Aufgelistet werden erst einmal nur Werte für die Instanzen der Größen 10, 50 und 100, da ab 500 die Laufzeit der zweiten Heuristik stark zunimmt.
-    Es wurden insgesamt 3 Durchläufe durchgeführt, in denen jeweils eine Testinstanz mit bestimmter Art Größe durch die beiden Heuristiken sortiert wurde.
-    
     Dabei fällt auf, dass die Werte der zweiten Heuristik nicht in allen Fällen gleich sind, wobei der Algorithmus aber immer die beste Lösung finden sollte.
     Dessen Ursache kann zum Beispiel in Fehlern der Implementation liegen.
 
@@ -121,22 +123,23 @@
 
     %\subsection{Abstandsummen der sortierten Bilder} \label{subsec:sum_sort}
 
-    \section{Laufzeiten der Heuristiken} \label{sec:laufzeiten}
+    \subsection{Laufzeiten der Heuristiken} \label{sec:laufzeiten}
 
-    Es werden je Art und Größe der Instanz 3 Messungen durchgeführt, von denen am Ende der Durchschnitt berechnet wird.
+    Auch bei den Laufzeiten wurden je Art und Größe der Instanz 3 Messungen durchgeführt, von denen am Ende der Durchschnitt berechnet wird.
     Die Einheiten der Messungen sind jeweils Sekunden (s).
-    Die Tabellen der Laufzeitenmessungen sind später im~\autoref{sec:app_laufzeiten} aufgeführt.
+    Die Tabellen der Laufzeitenmessungen sind im~\autoref{sec:app_laufzeiten} aufgeführt.
 
     \section{Wilcoxon Signed-Rank Test}
-    
-    Als Vergleich der beiden Heuristiken wird ein Wilcoxon Signed-Rank Test auf Basis der Durchschnittswerte der Ergebnis-Qualitäten und Laufzeiten der beiden Heuristiken über alle Größen und Arten durchgeführt. Daraus resultieren 18 Datenpunkte pro Heuristik für den Test.
-    
-    Anhand der Tabelle der kritischen Werte für den Wilcoxon-Test (\cite{wilcoxon_table}) kann ein für diese Stichprobengröße und einem Signifikanzniveau von $\alpha{} = 0,05$ ein kritischer Wert von $40$ abgelesen werden.
+
+    Als Vergleich der beiden Heuristiken wird ein Wilcoxon Signed-Rank Test auf Basis der Durchschnittswerte der Ergebnis-Qualitäten und Laufzeiten der beiden Heuristiken über alle Größen und Arten durchgeführt.
+    Daraus resultieren 18 Datenpunkte pro Heuristik für den Test.
+
+    Anhand der Tabelle der kritischen Werte für den Wilcoxon-Test (\cite{wilcoxon_table}) kann für diese Stichprobengröße und einem Signifikanzniveau von $\alpha{} = 0,05$ ein kritischer Wert von $40$ abgelesen werden.
     Liegt der aus dem Test ermittelte Wert darunter, befindet er sich im kritischen Bereich und die Nullhypothese, dass die Messwerte ähnlich verteilt sind, kann abgelehnt werden.
-    
+
     Aus Tabelle 1 ist erkennbar, dass ausschließlich positive Ränge vorhanden sind, was auf die zweite Heuristik mit dem Algorithmus der besten Lösung zurückzuführen ist.
     Daraus resultiert die kleinere Summe der negativen Ränge mit $0$ und liegt damit unter dem kritischen Wert.
-    
+
     \begin{figure}[H]
         \begin{center}
             \begin{tabular}{|r|l|S[table-format=5.7]|S[table-format=5.7]|S[table-format=4.9]|c|S[table-format=3]|S[table-format=3]|}
@@ -166,10 +169,10 @@
             \captionof{table}{Wilcoxon Signed-Rank Test für Ergebnis-Qualität}
         \end{center}
     \end{figure}
-    
+
     Auch bei den Laufzeiten zeigt sich nach Tabelle 2 die kleinere Summe der positiven Ränge mit $21$.
     Dadurch liegt auch diese unter dem kritischen Wert.
-    
+
     \begin{figure}[H]
         \begin{center}
             \begin{tabular}{|r|l|S[table-format=1.4]|S[table-format=2.4]|S[table-format=2.4]|c|S[table-format=2.1]|S[table-format=3]|}
@@ -202,9 +205,9 @@
     \end{figure}
 
     Somit agieren die beiden Heuristiken sowohl hinsichtlich der Qualität als auch der Laufzeit sehr unterschiedlich, zumindest in den Größenordnungen von 10 bis 100 Elementen der zu sortierenden Daten.
-    
+
     Des Weiteren ist aus den Werten des Wilcoxon-Test aber auch die eindeutige Tendenz zu einer besseren Laufzeit der ersten Heuristik ($21$ im Vergleich zu $150$) sowie zu einem besseren Ergebnis der zweiten Heuristik ($0$ im Vergleich zu $171$) erkennbar.
-    
+
     \newpage
     \appendix
     \input{ergebnis-qualitaet.tex}
